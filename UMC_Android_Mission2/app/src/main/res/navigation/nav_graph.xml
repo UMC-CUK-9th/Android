@@ -7,16 +7,20 @@ android:id="@+id/nav_graph"
 app:startDestination="@id/homeFragment"
     >
 
-<fragment
-    android:id="@+id/homeFragment"
-    android:name="com.example.umc_android_mission2.HomeFragment"
-    android:label="홈"
-    tools:layout="@layout/fragment_home" />
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.example.umc_android_mission2.HomeFragment"
+        android:label="홈"
+        tools:layout="@layout/fragment_home" >
+        <action
+            android:id="@+id/action_homeFragment_to_albumFragment"
+            app:destination="@id/albumFragment" />
+    </fragment>
 
 <fragment
-    android:id="@+id/lookFragment"
-    android:name="com.example.umc_android_mission2.LookFragment"
-    android:label="둘러보기"
+    android:id="@+id/albumFragment"
+    android:name="com.example.umc_android_mission2.AlbumFragment"
+    android:label="앨범"
     tools:layout="@layout/fragment_album" />
 
 <fragment

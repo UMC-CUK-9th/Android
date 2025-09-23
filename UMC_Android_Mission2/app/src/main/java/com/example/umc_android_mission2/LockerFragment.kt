@@ -15,4 +15,6 @@ class LockerFragment : Fragment() {
         // fragment_home.xml 레이아웃을 inflate해서 반환
         return inflater.inflate(R.layout.fragment_locker, container, false)
     }
+
+
 }
