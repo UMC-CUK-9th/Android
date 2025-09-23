@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="350dp">
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guidelineLeft"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_begin="25dp"
+            />
+
+
+        <ImageView
+            android:id="@+id/home_pannel_background_iv"
+            android:layout_width="match_parent"
+            android:layout_height="400dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/img_first_album_default"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <LinearLayout
+            android:id="@+id/home_pannel_three_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="20dp"
+            >
+
+            <ImageView
+                android:layout_width="35sp"
+                android:layout_height="35sp"
+                android:src="@drawable/btn_main_mike"
+                android:layout_marginHorizontal="10dp"/>
+
+            <ImageView
+                android:layout_width="35sp"
+                android:layout_height="35sp"
+                android:src="@drawable/btn_main_ticket"
+                android:layout_marginHorizontal="10dp"/>
+
+            <ImageView
+                android:id="@+id/home_pannel_byn_setting_iv"
+                android:layout_width="35sp"
+                android:layout_height="35sp"
+                android:src="@drawable/btn_main_setting"
+                android:layout_marginHorizontal="10dp"/>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/home_pannel_title_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="달밤의 감성 산책"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            app:layout_constraintTop_toBottomOf="@id/home_pannel_three_iv"
+            app:layout_constraintStart_toStartOf="@id/guidelineLeft"
+            android:layout_marginTop="15dp"
+             />
+
+        <ImageView
+            android:layout_width="60sp"
+            android:layout_height="60sp"
+            android:src="@drawable/btn_panel_play_large"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="120dp"
+            android:layout_marginEnd="20dp"/>
+
+        <TextView
+            android:id="@+id/home_pannel_day_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="총 10 곡 2025.03.30"
+            android:textColor="@color/white"
+            app:layout_constraintStart_toStartOf="@id/guidelineLeft"
+            app:layout_constraintTop_toBottomOf="@id/home_pannel_title_tv"
+            android:layout_marginTop="50dp"
+            />
+
+        <ImageView
+            android:id="@+id/home_pannel_lady_iv"
+            android:layout_width="50sp"
+            android:layout_height="50sp"
+            android:src="@drawable/img_album_lady"
+            app:layout_constraintStart_toStartOf="@id/guidelineLeft"
+            app:layout_constraintTop_toBottomOf="@id/home_pannel_day_tv"
+            android:layout_marginTop="10dp"/>
+
+        <TextView
+            android:id="@+id/home_pannel_lady_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Lady"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:textSize="17sp"
+            app:layout_constraintStart_toEndOf="@+id/home_pannel_lady_iv"
+            app:layout_constraintTop_toBottomOf="@id/home_pannel_day_tv"
+            android:layout_marginTop="17dp"
+            android:layout_marginStart="25dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Kenshi Yonezu"
+            android:textColor="@color/white"
+            android:textSize="10dp"
+            app:layout_constraintStart_toEndOf="@+id/home_pannel_lady_iv"
+            app:layout_constraintTop_toBottomOf="@id/home_pannel_lady_tv"
+            android:layout_marginStart="25dp"
+            />
+
+        <ImageView
+            android:layout_width="50sp"
+            android:layout_height="50sp"
+            android:src="@drawable/img_album_spinning"
+            app:layout_constraintStart_toStartOf="@id/guidelineLeft"
+            app:layout_constraintTop_toBottomOf="@id/home_pannel_lady_iv"
+            android:layout_marginTop="20dp"/>
+
+        <TextView
+            android:id="@+id/home_pannel_spinning_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Spinning Globe"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:textSize="17sp"
+            app:layout_constraintStart_toEndOf="@+id/home_pannel_lady_iv"
+            app:layout_constraintTop_toBottomOf="@id/home_pannel_day_tv"
+            android:layout_marginTop="85dp"
+            android:layout_marginStart="25dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Kenshi Yonezu"
+            android:textColor="@color/white"
+            android:textSize="10dp"
+            app:layout_constraintStart_toEndOf="@+id/home_pannel_lady_iv"
+            app:layout_constraintTop_toBottomOf="@id/home_pannel_spinning_tv"
+            android:layout_marginStart="25dp"
+            />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/home_guidelinetop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="380dp"
+        />
+
+    <TextView
+        android:id="@+id/home_today_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="오늘 발매 음악"
+        android:textSize="17sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="@id/home_guidelinetop"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="20dp"
+        />
+
+    <ImageView
+        android:layout_width="25sp"
+        android:layout_height="25sp"
+        android:src="@drawable/btn_main_arrow_more"
+        app:layout_constraintStart_toEndOf="@+id/home_today_tv"
+        app:layout_constraintTop_toTopOf="@id/home_guidelinetop"/>
+
+    <LinearLayout
+        android:id="@+id/home_pannel_three_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/home_guidelinetop"
+        android:layout_marginTop="3dp"
+        android:layout_marginEnd="20dp"
+        >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="종합"
+            android:textStyle="bold"
+            android:textColor="@color/blue"
+            android:layout_marginHorizontal="10dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="국내"
+            android:textStyle="bold"
+            android:textColor="@color/gray"
+            android:layout_marginHorizontal="10dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="해외"
+            android:textStyle="bold"
+            android:textColor="@color/gray"
+            android:layout_marginHorizontal="10dp"/>
+
+    </LinearLayout>
+    <ImageView
+        android:id="@+id/home_lost_iv"
+        android:layout_width="130sp"
+        android:layout_height="130sp"
+        android:src="@drawable/img_album_lost"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/home_today_tv"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="10dp"/>
+
+    <TextView
+        android:id="@+id/home_lost_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Lost corner"
+        android:textStyle="bold"
+        android:textSize="17sp"
+        app:layout_constraintTop_toBottomOf="@+id/home_lost_iv"
+        app:layout_constraintStart_toStartOf="@+id/home_lost_iv"
+        android:layout_marginTop="5dp"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Kenshi Yonezu"
+        android:textSize="13sp"
+        android:textColor="@color/gray"
+        app:layout_constraintTop_toBottomOf="@+id/home_lost_tv"
+        app:layout_constraintStart_toStartOf="@+id/home_lost_iv"/>
+
+
+
+
+
+
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
