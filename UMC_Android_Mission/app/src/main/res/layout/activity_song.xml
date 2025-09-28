@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <!-- 상단 도구 아이콘 -->
+    <ImageView
+        android:id="@+id/song_btn_setting_iv"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/btn_player_setting"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"/>
+
+    <ImageView
+        android:id="@+id/song_btn_expand_iv"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/btn_main_arrow_more"
+        android:rotation="90"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp"/>
+
+    <ImageView
+        android:id="@+id/song_btn_menu_iv"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/btn_player_more"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/song_btn_expand_iv"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
+        />
+
+    <!-- 곡명 등 전체 아래로 충분히 이동 -->
+    <TextView
+        android:id="@+id/song_title_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pop Song"
+        android:textStyle="bold"
+        android:textSize="20sp"
+        android:gravity="center"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="120dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/song_artistLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/song_title_tv"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:gravity="center"
+        android:layout_marginTop="8dp" >
+
+        <TextView
+            android:id="@+id/song_artist_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Kenshi Yonezu"
+            android:textSize="15sp"
+            android:textColor="@color/gray"/>
+
+        <ImageView
+            android:id="@+id/song_arrow_iv"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:src="@drawable/btn_main_arrow_more"
+            android:layout_marginStart="4dp"/>
+    </LinearLayout>
+
+    <!-- 앨범 커버 (네모, 원본 이미지) -->
+    <ImageView
+        android:id="@+id/song_albumArt_iv"
+        android:layout_width="220dp"
+        android:layout_height="220dp"
+        android:layout_marginTop="32dp"
+        android:src="@drawable/img_album_lost"
+        app:layout_constraintTop_toBottomOf="@id/song_artistLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- 가사 -->
+    <TextView
+        android:id="@+id/song_lyric1_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="가사 1"
+        android:textSize="15sp"
+        android:textColor="@color/black"
+        app:layout_constraintTop_toBottomOf="@id/song_albumArt_iv"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="15dp"/>
+
+    <TextView
+        android:id="@+id/song_lyric2_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="가사 2"
+        android:textSize="15sp"
+        android:textColor="@color/black"
+        app:layout_constraintTop_toBottomOf="@id/song_lyric1_tv"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="4dp"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        app:layout_constraintTop_toBottomOf="@+id/song_lyric2_tv"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        >
+        <ImageView
+            android:id="@+id/song_like_btn"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_my_like_off"
+            android:layout_marginEnd="8dp"/>
+
+        <ImageView
+            android:id="@+id/song_unlike_btn"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/btn_player_unlike_off"/>
+    </LinearLayout>
+
+
+    <SeekBar
+        android:id="@+id/song_seekbar_sb"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:progress="0"
+        android:outlineAmbientShadowColor="@color/gray"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/song_lyric2_tv"
+        android:layout_marginTop="25dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"/>
+
+
+    <TextView
+        android:id="@+id/song_timeStart_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="00:00"
+        android:textColor="@color/gray"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/song_lyric2_tv"
+        android:layout_marginTop="40dp"
+        android:layout_marginStart="24dp"/>
+
+    <TextView
+        android:id="@+id/song_timeEnd_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="03:27"
+        android:textColor="@color/gray"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/song_lyric2_tv"
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="24dp"/>
+
+
+
+    <!-- 재생 버튼 -->
+    <LinearLayout
+        android:id="@+id/song_playbackLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/song_timeEnd_tv"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp">
+
+        <ImageView
+            android:id="@+id/song_btn_repeat_iv"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginEnd="50dp"
+            android:src="@drawable/nugu_btn_repeat_inactive"/>
+        <ImageView
+            android:id="@+id/song_btn_skipPrevious_iv"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/nugu_btn_skip_previous_32"/>
+        <ImageView
+            android:id="@+id/song_btn_play_iv"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/nugu_btn_play_32"/>
+        <ImageView
+            android:id="@+id/song_btn_skipNext_iv"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/nugu_btn_skip_next_32"/>
+        <ImageView
+            android:id="@+id/song_btn_random_iv"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginStart="50dp"
+            android:src="@drawable/nugu_btn_random_inactive"/>
+    </LinearLayout>
+
+    <!-- 유사곡 버튼 -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="10dp"
+        >
+
+        <ImageView
+            android:id="@+id/song_instagram_iv"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/btn_actionbar_instagram"
+            android:layout_marginEnd="85dp" />
+
+        <Button
+            android:id="@+id/song_btn_recommend_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="유사곡"
+            />
+
+        <ImageView
+            android:id="@+id/song_more_iv"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/btn_player_more"
+            android:layout_marginStart="85dp"
+            />
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
