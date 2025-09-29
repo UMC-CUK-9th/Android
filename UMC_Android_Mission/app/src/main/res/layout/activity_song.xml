@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:background="@color/white">
 
     <!-- 상단 도구 아이콘 -->
@@ -38,15 +39,15 @@
         android:layout_marginTop="8dp"
         />
 
-    <!-- 곡명 등 전체 아래로 충분히 이동 -->
+    
     <TextView
         android:id="@+id/song_title_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Pop Song"
         android:textStyle="bold"
         android:textSize="20sp"
         android:gravity="center"
+        tools:text="노래 제목"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="120dp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -67,7 +68,7 @@
             android:id="@+id/song_artist_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Kenshi Yonezu"
+            tools:text="가수 이름"
             android:textSize="15sp"
             android:textColor="@color/gray"/>
 
@@ -195,28 +196,30 @@
             android:id="@+id/song_btn_repeat_iv"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:layout_marginEnd="50dp"
+            android:layout_marginEnd="30dp"
             android:src="@drawable/nugu_btn_repeat_inactive"/>
         <ImageView
             android:id="@+id/song_btn_skipPrevious_iv"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/nugu_btn_skip_previous_32"/>
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/nugu_btn_skip_previous_32"
+            android:layout_marginEnd="10dp"/>
         <ImageView
             android:id="@+id/song_btn_play_iv"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
             android:src="@drawable/nugu_btn_play_32"/>
         <ImageView
             android:id="@+id/song_btn_skipNext_iv"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/nugu_btn_skip_next_32"/>
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/nugu_btn_skip_next_32"
+            android:layout_marginStart="10dp"/>
         <ImageView
             android:id="@+id/song_btn_random_iv"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:layout_marginStart="50dp"
+            android:layout_marginStart="30dp"
             android:src="@drawable/nugu_btn_random_inactive"/>
     </LinearLayout>
 
@@ -239,11 +242,17 @@
             android:src="@drawable/btn_actionbar_instagram"
             android:layout_marginEnd="85dp" />
 
-        <Button
+        <TextView
             android:id="@+id/song_btn_recommend_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@drawable/rounded_oval_background"
             android:text="유사곡"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+
             />
 
         <ImageView
