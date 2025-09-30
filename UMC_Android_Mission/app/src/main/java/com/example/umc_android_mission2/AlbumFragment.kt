@@ -24,17 +24,21 @@ class AlbumFragment : Fragment() {
                 .commitAllowingStateLoss()
         }
 
-        val albumAdapter = AlbumVPAdapter(this)
+        // fragment_album.xml에서 앨범 제목과 아티스트 이름을 가져옴
+        val currentAlbumTitle = binding.albumTitleTv.text.toString()
+        val currentArtistName = binding.albumArtistTv.text.toString()
+
+        // AlbumVPAdapter 생성 시 앨범 제목과 아티스트 이름을 전달
+        val albumAdapter = AlbumVPAdapter(this, currentAlbumTitle, currentArtistName)
         binding.albumContentVp.adapter = albumAdapter
         TabLayoutMediator(binding.albumContentTb, binding.albumContentVp) {
-            tab, position ->
+                tab, position ->
             tab.text = information[position]
         }.attach()
         //.attach()는 탭레이아웃과 뷰페이저2를 붙이는 메서드
 
         return binding.root
     }
-
 
     override fun onDestroyView() {
         super.onDestroyView()
