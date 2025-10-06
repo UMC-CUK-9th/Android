@@ -19,11 +19,17 @@ class SongActivity : AppCompatActivity() {
         val albumTitle = intent.getStringExtra("album_title")
         val artistName = intent.getStringExtra("artist_name")
 
+        // 전달받은 앨범 제목과 가수 이름으로 TextView 업데이트
+        // 앨범 제목이 없을 경우 "제목 없음"으로 표시
+        // 가수 이름이 없을 경우 "가수 없음"으로 표시
+        binding.songTitleTv.text = albumTitle ?: "제목 없음"
+        binding.songArtistTv.text = artistName ?: "가수 없음"
+
         // 버튼 클릭 시 MainActivity로 결과값 전달하며 종료
         binding.songBtnExpandIv.setOnClickListener {
             val resultIntent = Intent().apply {
-                putExtra("album_title", albumTitle)
-                putExtra("artist_name",artistName)
+                putExtra("album_title", albumTitle) // 처음 받은 값 기준
+                putExtra("artist_name", artistName) // 처음 받은 값 기준
             }
             setResult(RESULT_OK, resultIntent)
             finish()
