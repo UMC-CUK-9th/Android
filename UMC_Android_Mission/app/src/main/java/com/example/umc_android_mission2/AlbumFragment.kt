@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.example.umc_android_mission2.databinding.FragmentAlbumBinding
 import com.google.android.material.tabs.TabLayoutMediator
 
@@ -18,24 +19,28 @@ class AlbumFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = FragmentAlbumBinding.inflate(inflater, container, false)
 
+        // HomeFragment에서 전달받은 데이터 꺼내기
+        val title = arguments?.getString("title")
+        val artist = arguments?.getString("artist")
+        val coverImg = arguments?.getInt("coverImg")
+
+        // 전달받은 데이터로 UI 업데이트
+        binding.albumTitleTv.text = title
+        binding.albumArtistTv.text = artist
+        coverImg?.let { binding.albumCoverIv.setImageResource(it) }
+
+        // 뒤로가기 버튼 로직 수정
         binding.albumBackIv.setOnClickListener {
-            (context as MainActivity).supportFragmentManager.beginTransaction()
-                .replace(R.id.main_frm, HomeFragment())
-                .commitAllowingStateLoss()
+            findNavController().popBackStack()
         }
 
-        // fragment_album.xml에서 앨범 제목과 아티스트 이름을 가져옴
-        val currentAlbumTitle = binding.albumTitleTv.text.toString()
-        val currentArtistName = binding.albumArtistTv.text.toString()
-
-        // AlbumVPAdapter 생성 시 앨범 제목과 아티스트 이름을 전달
-        val albumAdapter = AlbumVPAdapter(this, currentAlbumTitle, currentArtistName)
+        // AlbumVPAdapter 생성 시 전달받은 앨범 제목과 아티스트 이름을 전달
+        val albumAdapter = AlbumVPAdapter(this, title ?: "", artist ?: "")
         binding.albumContentVp.adapter = albumAdapter
         TabLayoutMediator(binding.albumContentTb, binding.albumContentVp) {
-                tab, position ->
+            tab, position ->
             tab.text = information[position]
         }.attach()
-        //.attach()는 탭레이아웃과 뷰페이저2를 붙이는 메서드
 
         return binding.root
     }

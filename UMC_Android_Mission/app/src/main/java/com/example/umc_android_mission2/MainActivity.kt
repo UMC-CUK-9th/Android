@@ -6,8 +6,6 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.umc_android_mission2.databinding.ActivityMainBinding
@@ -15,6 +13,7 @@ import com.example.umc_android_mission2.databinding.ActivityMainBinding
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private var currentAlbum: AlbumData? = null // SongActivity로 전달해야 할 coverImg라는 보이지 않는 정보를 잠시 기억해두는 메모장 역할
 
     private val songActivityLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -28,6 +27,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -40,21 +40,28 @@ class MainActivity : AppCompatActivity() {
         val navController = navHostFragment.navController
 
         binding.mainPlayer.setOnClickListener {
-            val albumTitle = binding.mainPlayerTitle.text.toString()
-            val artistName= binding.mainPlayerArtist.text.toString()
             val intent = Intent(this, SongActivity::class.java).apply {
-                putExtra("album_title", albumTitle)
-                putExtra("artist_name", artistName)
+                // currentAlbum이 있으면 그 정보를, 없으면 TextView의 현재 텍스트를 전달
+                if (currentAlbum != null) {
+                    putExtra("album_title", currentAlbum!!.title)
+                    putExtra("artist_name", currentAlbum!!.artist)
+                    currentAlbum!!.coverImg?.let { putExtra("album_coverImg", it) }
+                } else {
+                    putExtra("album_title", binding.mainPlayerTitle.text.toString())
+                    putExtra("artist_name", binding.mainPlayerArtist.text.toString())
+                    // album_coverImg는 전달하지 않음
+                }
             }
             songActivityLauncher.launch(intent)
         }
 
         binding.mainBnv.setupWithNavController(navController)
+    }
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
+    fun updateMiniPlayer(album: AlbumData) {
+        // 현재 앨범 정보를 저장하고 UI 업데이트
+        currentAlbum = album
+        binding.mainPlayerTitle.text = album.title
+        binding.mainPlayerArtist.text = album.artist
     }
 }
