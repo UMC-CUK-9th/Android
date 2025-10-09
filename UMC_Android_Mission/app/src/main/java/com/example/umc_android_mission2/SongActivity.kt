@@ -15,21 +15,24 @@ class SongActivity : AppCompatActivity() {
         binding = ActivitySongBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // MainActivity에서 전달한 앨범 제목,가수 받기
+        // MainActivity에서 전달한 데이터 받기
         val albumTitle = intent.getStringExtra("album_title")
         val artistName = intent.getStringExtra("artist_name")
+        val albumCoverImg = intent.getIntExtra("album_coverImg", 0)
 
-        // 전달받은 앨범 제목과 가수 이름으로 TextView 업데이트
-        // 앨범 제목이 없을 경우 "제목 없음"으로 표시
-        // 가수 이름이 없을 경우 "가수 없음"으로 표시
+        // 전달받은 데이터로 UI 업데이트
         binding.songTitleTv.text = albumTitle ?: "제목 없음"
         binding.songArtistTv.text = artistName ?: "가수 없음"
+        if (albumCoverImg != 0) {
+            binding.songAlbumIv.setImageResource(albumCoverImg)
+        }
 
         // 버튼 클릭 시 MainActivity로 결과값 전달하며 종료
         binding.songBtnExpandIv.setOnClickListener {
             val resultIntent = Intent().apply {
-                putExtra("album_title", albumTitle) // 처음 받은 값 기준
-                putExtra("artist_name", artistName) // 처음 받은 값 기준
+                putExtra("album_title", albumTitle)
+                putExtra("artist_name", artistName)
+                putExtra("album_coverImg", albumCoverImg)
             }
             setResult(RESULT_OK, resultIntent)
             finish()

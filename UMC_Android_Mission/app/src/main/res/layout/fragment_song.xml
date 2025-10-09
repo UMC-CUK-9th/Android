@@ -2,8 +2,10 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
     <LinearLayout
+        android:id="@+id/mixLayout"
         android:orientation="horizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -39,6 +41,17 @@
             app:showText="false"
             android:layout_marginStart="0dp"/>
     </LinearLayout>
+<androidx.recyclerview.widget.RecyclerView
+    android:id="@+id/song_list_rv"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@+id/mixLayout"
+    android:layout_marginTop="10dp"
+    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+    tools:listitem="@layout/item_song"
+    />
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

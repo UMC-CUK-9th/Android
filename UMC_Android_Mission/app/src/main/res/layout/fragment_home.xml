@@ -84,34 +84,15 @@
             android:layout_marginHorizontal="10dp"/>
     </LinearLayout>
 
-    <ImageView
-        android:id="@+id/home_lost_iv"
-        android:layout_width="130sp"
-        android:layout_height="130sp"
-        android:src="@drawable/img_album_lost"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/home_today_music_album_rv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:orientation="horizontal"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/home_today_tv"
-        android:layout_marginTop="20dp"
-        android:layout_marginStart="10dp"/>
-
-    <TextView
-        android:id="@+id/home_lost_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Lost corner"
-        android:textStyle="bold"
-        android:textSize="17sp"
-        app:layout_constraintTop_toBottomOf="@+id/home_lost_iv"
-        app:layout_constraintStart_toStartOf="@+id/home_lost_iv"
-        android:layout_marginTop="5dp"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Kenshi Yonezu"
-        android:textSize="13sp"
-        android:textColor="@color/gray"
-        app:layout_constraintTop_toBottomOf="@+id/home_lost_tv"
-        app:layout_constraintStart_toStartOf="@+id/home_lost_iv"/>
+        tools:listitem="@layout/item_album" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
