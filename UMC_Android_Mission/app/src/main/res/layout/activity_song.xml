@@ -141,7 +141,7 @@
 
 
     <SeekBar
-        android:id="@+id/song_seekbar_sb"
+        android:id="@+id/song_progress_sb"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:progress="0"
@@ -151,11 +151,15 @@
         app:layout_constraintTop_toBottomOf="@id/song_lyric2_tv"
         android:layout_marginTop="25dp"
         android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"/>
+        android:layout_marginEnd="8dp"
+        android:max="100000"
+        android:thumb="@color/transparent"
+        android:progressTint="@color/blue"
+        />
 
 
     <TextView
-        android:id="@+id/song_timeStart_tv"
+        android:id="@+id/song_startTime_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="00:00"
@@ -167,7 +171,7 @@
         android:layout_marginStart="24dp"/>
 
     <TextView
-        android:id="@+id/song_timeEnd_tv"
+        android:id="@+id/song_endTime_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="03:27"
@@ -187,7 +191,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center"
-        app:layout_constraintTop_toBottomOf="@id/song_timeEnd_tv"
+        app:layout_constraintTop_toBottomOf="@id/song_endTime_tv"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp">
@@ -243,7 +247,7 @@
             android:layout_marginEnd="85dp" />
 
         <TextView
-            android:id="@+id/song_btn_recommend_btn"
+            android:id="@+id/song_btn_recommend_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/rounded_oval_background"

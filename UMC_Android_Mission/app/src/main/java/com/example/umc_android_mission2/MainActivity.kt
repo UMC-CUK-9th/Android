@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.umc_android_mission2.databinding.ActivityMainBinding
@@ -29,6 +30,9 @@ class MainActivity : AppCompatActivity() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // 스플래시 화면을 유지하는 시간을 설정
+        installSplashScreen()
+
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
