@@ -1,126 +1,146 @@
 package com.example.umc_android_mission2
 
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.os.Bundle
+import android.os.IBinder
 import androidx.appcompat.app.AppCompatActivity
 import com.example.umc_android_mission2.databinding.ActivitySongBinding
-import java.util.Timer
-import kotlin.concurrent.timerTask
 
 class SongActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySongBinding
-    private lateinit var song: Song
-    private var timer: Timer? = null
+    private var musicPlayerService: MusicPlayerService? = null
+    private var isServiceBound = false
+
+    private val serviceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as MusicPlayerService.MusicPlayerBinder
+            musicPlayerService = binder.getService()
+            isServiceBound = true
+            initSong() 
+            setupUI()
+            setupListeners()
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            isServiceBound = false
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySongBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        initSong()
-        setPlayer()
+        binding.songBtnExpandIv.setOnClickListener { finish() }
 
-        binding.songBtnExpandIv.setOnClickListener {
-            val resultIntent = Intent().apply {
-                putExtra("song_title", song.title)
-                putExtra("artist_name", song.singer)
-                putExtra("second", song.second)
-                putExtra("playtime", song.playtime)
-                putExtra("isPlaying", song.isPlaying)
-                intent.getIntExtra("album_coverImg", 0).let {
-                    if (it != 0) putExtra("album_coverImg", it)
+        binding.songBtnPlayIv.setOnClickListener {
+            if (isServiceBound) {
+                val song = musicPlayerService!!.getCurrentSong()
+                if (song.isPlaying) {
+                    musicPlayerService?.pause()
+                } else {
+                    musicPlayerService?.play()
                 }
             }
-            setResult(RESULT_OK, resultIntent)
-            finish()
         }
-
-        // 하나의 버튼으로 재생/일시정지 제어
-        binding.songBtnPlayIv.setOnClickListener {
-            song.isPlaying = !song.isPlaying // 상태 반전
-            setPlayerStatus(song.isPlaying) // UI 및 타이머 업데이트
-        }
-        // 이전 곡 버튼 클릭 시 음악 초기화
-        binding.songBtnSkipNextIv.setOnClickListener {
-            restartSong()
-        }
-        // 다음 곡 버튼 클릭 시 음악 초기화
-        binding.songBtnSkipPreviousIv.setOnClickListener {
-            restartSong()
-        }
-
-
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        timer?.cancel()
+    override fun onStart() {
+        super.onStart()
+        val serviceIntent = Intent(this, MusicPlayerService::class.java)
+        bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (isServiceBound) {
+            setupUI()
+            setupListeners()
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (isServiceBound) {
+            musicPlayerService?.onSongChanged = null
+            musicPlayerService?.onSecondChanged = null
+            musicPlayerService?.onStateChanged = null
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (isServiceBound) {
+            unbindService(serviceConnection)
+            isServiceBound = false
+        }
     }
 
     private fun initSong() {
-        val title = intent.getStringExtra("album_title") ?: "제목 없음"
-        val singer = intent.getStringExtra("artist_name") ?: "가수 없음"
+        if (!isServiceBound) return
+        val title = intent.getStringExtra("album_title") ?: ""
+        val singer = intent.getStringExtra("artist_name") ?: ""
+        val coverImg = intent.getIntExtra("album_coverImg", 0)
 
-        song = Song(
-            title = title,
-            singer = singer,
-            second = 0,
-            playtime = 60,
-            isPlaying = true
-        )
+        val currentSong = musicPlayerService!!.getCurrentSong()
+
+        if (currentSong.title != title || currentSong.singer != singer) {
+            musicPlayerService?.setSong(
+                Song(
+                    title = title,
+                    singer = singer,
+                    playtime = 60,
+                    isPlaying = true,
+                    coverImg = coverImg.takeIf { it != 0 }
+                )
+            )
+        }
     }
 
-    private fun setPlayer() {
+    private fun setupUI() {
+        if (!isServiceBound) return
+        val song = musicPlayerService!!.getCurrentSong()
         binding.songTitleTv.text = song.title
         binding.songArtistTv.text = song.singer
-        binding.songStartTimeTv.text = String.format("%02d:%02d", song.second / 60, song.second % 60)
-        binding.songEndTimeTv.text = String.format("%02d:%02d", song.playtime / 60, song.playtime % 60)
         binding.songProgressSb.max = song.playtime
         binding.songProgressSb.progress = song.second
-
-        val albumCoverImg = intent.getIntExtra("album_coverImg", 0)
-        if (albumCoverImg != 0) {
-            binding.songAlbumIv.setImageResource(albumCoverImg)
-        }
-
+        binding.songStartTimeTv.text = formatTime(song.second)
+        binding.songEndTimeTv.text = formatTime(song.playtime)
+        song.coverImg?.let { binding.songAlbumIv.setImageResource(it) }
         setPlayerStatus(song.isPlaying)
     }
 
-    // 이미지 리소스를 교체하는 방식
+    private fun setupListeners() {
+        if (!isServiceBound) return
+        musicPlayerService?.onSongChanged = { song ->
+            binding.songTitleTv.text = song.title
+            binding.songArtistTv.text = song.singer
+            binding.songProgressSb.max = song.playtime
+            binding.songEndTimeTv.text = formatTime(song.playtime)
+            song.coverImg?.let { img -> binding.songAlbumIv.setImageResource(img) }
+        }
+        musicPlayerService?.onSecondChanged = { second ->
+            binding.songProgressSb.progress = second
+            binding.songStartTimeTv.text = formatTime(second)
+        }
+        musicPlayerService?.onStateChanged = { isPlaying ->
+            setPlayerStatus(isPlaying)
+        }
+    }
+
     private fun setPlayerStatus(isPlaying: Boolean) {
         if (isPlaying) {
-            binding.songBtnPlayIv.setImageResource(R.drawable.nugu_btn_pause_32) // 일시정지 아이콘
-            startTimer()
+            binding.songBtnPlayIv.setImageResource(R.drawable.nugu_btn_pause_32)
         } else {
-            binding.songBtnPlayIv.setImageResource(R.drawable.nugu_btn_play_32) // 재생 아이콘
-            timer?.cancel()
+            binding.songBtnPlayIv.setImageResource(R.drawable.nugu_btn_play_32)
         }
     }
 
-    private fun startTimer() {
-        timer = Timer()
-        timer?.schedule(timerTask {
-            if (song.second >= song.playtime) {
-                runOnUiThread { setPlayerStatus(false) }
-                return@timerTask
-            }
-            song.second++
-            runOnUiThread {
-                binding.songProgressSb.progress = song.second
-                binding.songStartTimeTv.text = String.format("%02d:%02d", song.second / 60, song.second % 60)
-            }
-        }, 1000, 1000)
-    }
-
-    private fun restartSong() {
-        timer?.cancel() // 기존 타이머 중지
-        song.second = 0
-        song.isPlaying = true
-        runOnUiThread {
-            binding.songProgressSb.progress = song.second
-            binding.songStartTimeTv.text = String.format("%02d:%02d", song.second / 60, song.second % 60)
-            setPlayerStatus(song.isPlaying) // UI 업데이트 및 타이머 다시 시작
-        }
+    private fun formatTime(seconds: Int): String {
+        return String.format("%02d:%02d", seconds / 60, seconds % 60)
     }
 }

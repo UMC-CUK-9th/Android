@@ -23,6 +23,9 @@
         </activity>
         <activity android:name=".SongActivity" />
 
+        <!-- 음악 재생 서비스 등록 -->
+        <service android:name=".MusicPlayerService" />
+
     </application>
 
 </manifest>

@@ -42,9 +42,6 @@ android {
 }
 
 dependencies {
-    val navVersion = "2.7.7"
-    implementation("androidx.navigation:navigation-fragment-ktx:$navVersion")
-    implementation("androidx.navigation:navigation-ui-ktx:$navVersion")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -57,4 +54,5 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     implementation("androidx.viewpager2:viewpager2:1.0.0")
     implementation("androidx.core:core-splashscreen:1.0.1")// splash screen 의존성
+    implementation("me.relex:circleindicator:2.1.6") // CircleIndicator 의존성 추가
 }
