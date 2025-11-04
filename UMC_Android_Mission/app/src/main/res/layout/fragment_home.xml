@@ -23,9 +23,8 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"/>
 
-
-
     </androidx.constraintlayout.widget.ConstraintLayout>
+
     <me.relex.circleindicator.CircleIndicator3
         android:id="@+id/home_banner_indicator"
         android:layout_width="wrap_content"
@@ -107,3 +106,4 @@
         tools:listitem="@layout/item_album" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
