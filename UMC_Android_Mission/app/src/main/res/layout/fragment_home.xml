@@ -15,7 +15,7 @@
         app:layout_constraintEnd_toEndOf="parent">
 
         <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/home_Banner_Vp"
+            android:id="@+id/home_banner_vp"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -23,8 +23,19 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"/>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
 
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+    <me.relex.circleindicator.CircleIndicator3
+        android:id="@+id/home_banner_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="18dp"
+        android:layout_marginBottom="10dp"
+        app:ci_drawable="@drawable/indicator_selected"
+        app:ci_drawable_unselected="@drawable/indicator_unselected"
+        app:layout_constraintTop_toBottomOf="@+id/home_top_banner_container"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/home_guidelinetop"

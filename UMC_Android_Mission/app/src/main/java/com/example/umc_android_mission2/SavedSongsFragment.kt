@@ -39,8 +39,8 @@ class SavedSongsFragment: Fragment() {
         }
 
         val SavedSongsRVAdapter = SavedSongsRVAdapter(savedSongsDatas)
-        binding.savedSongListRv.adapter = SavedSongsRVAdapter
-        binding.savedSongListRv.layoutManager = LinearLayoutManager(context)
+        binding.lockerSavedSongListRv.adapter = SavedSongsRVAdapter
+        binding.lockerSavedSongListRv.layoutManager = LinearLayoutManager(context)
 
 
         return binding.root
