@@ -7,7 +7,6 @@ import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
 import android.view.View
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.fragment.NavHostFragment
@@ -20,15 +19,13 @@ class MainActivity : AppCompatActivity() {
     private var musicPlayerService: MusicPlayerService? = null
     private var isServiceBound = false
 
-    // 서비스와의 연결을 관리하는 객체
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             val binder = service as MusicPlayerService.MusicPlayerBinder
             musicPlayerService = binder.getService()
             isServiceBound = true
-            // 서비스가 연결되는 시점에 UI를 한번 업데이트하고 리스너를 설정
-            setupUI()
-            setupListeners()
+            // 서비스가 연결되면, UI와 리스너를 즉시 설정
+            updateUiAndListeners()
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
@@ -39,8 +36,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -50,42 +45,30 @@ class MainActivity : AppCompatActivity() {
 
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.main_frm) as NavHostFragment
         val navController = navHostFragment.navController
+        binding.mainBnv.setupWithNavController(navController)
 
+        // 미니플레이어 레이아웃 전체 클릭 시 SongActivity로 이동
         binding.mainPlayer.setOnClickListener {
-            val currentSong = musicPlayerService?.getCurrentSong() ?: return@setOnClickListener
-            val intent = Intent(this, SongActivity::class.java).apply {
-                putExtra("album_title", currentSong.title)
-                putExtra("artist_name", currentSong.singer)
-                currentSong.coverImg?.let { putExtra("album_coverImg", it) }
-            }
+            val intent = Intent(this, SongActivity::class.java)
+            // 최신 곡 정보를 전달할 필요 없이, SongActivity가 서비스로부터 직접 받도록 함
             startActivity(intent)
         }
-
-        binding.mainMiniplayerBtn.setOnClickListener { musicPlayerService?.play() }
-        binding.mainPauseBtn.setOnClickListener { musicPlayerService?.pause() }
-
-        binding.mainBnv.setupWithNavController(navController)
     }
 
     override fun onResume() {
         super.onResume()
-        // 화면에 복귀할 때마다, 서비스가 연결되어 있다면 UI와 리스너를 다시 설정
-        // SongActivity가 훔쳐갔던 리스너를 다시 되찾아오는 과정
+        // 액티비티가 다시 화면에 나타날 때, 서비스가 연결된 상태라면 UI를 다시 동기화
         if (isServiceBound) {
-            setupUI()
-            setupListeners()
+            updateUiAndListeners()
         }
     }
 
     override fun onPause() {
         super.onPause()
-        // 다른 화면으로 이동하기 직전에 리스너를 해제
-        // 다른 Activity가 리스너 역할을 할 수 있도록 자리를 비워줌
-        if (isServiceBound) {
-            musicPlayerService?.onSongChanged = null
-            musicPlayerService?.onSecondChanged = null
-            musicPlayerService?.onStateChanged = null
-        }
+        // 액티비티가 화면에서 사라질 때, 메모리 누수 방지를 위해 콜백을 반드시 제거
+        musicPlayerService?.onSongChanged = null
+        musicPlayerService?.onSecondChanged = null
+        musicPlayerService?.onStateChanged = null
     }
 
     override fun onDestroy() {
@@ -108,30 +91,41 @@ class MainActivity : AppCompatActivity() {
         )
         musicPlayerService?.setSong(newSong)
     }
+    
+    // 1. UI 업데이트와 리스너 설정을 하나의 함수로 통합
+    private fun updateUiAndListeners() {
+        if (!isServiceBound) return // 서비스가 바인딩되지 않았다면 아무것도 하지 않음
 
-    private fun setupUI() {
-        if (!isServiceBound) return
-        val song = musicPlayerService!!.getCurrentSong()
-        binding.mainPlayerTitle.text = song.title
-        binding.mainPlayerArtist.text = song.singer
-        binding.mainPlayerSeekbar.max = song.playtime
-        binding.mainPlayerSeekbar.progress = song.second
-        setPlayerStatus(song.isPlaying)
-    }
+        val service = musicPlayerService ?: return
+        val currentSong = service.getCurrentSong()
 
-    private fun setupListeners() {
-        if (!isServiceBound) return
-        musicPlayerService?.onSongChanged = { song ->
-            binding.mainPlayerTitle.text = song.title
-            binding.mainPlayerArtist.text = song.singer
-            binding.mainPlayerSeekbar.max = song.playtime
+        // --- UI 업데이트 로직 ---
+        if (currentSong.title.isNotBlank()) {
+            binding.mainPlayer.visibility = View.VISIBLE
+            binding.mainPlayerTitle.text = currentSong.title
+            binding.mainPlayerArtist.text = currentSong.singer
+            binding.mainPlayerSeekbar.max = currentSong.playtime
+            binding.mainPlayerSeekbar.progress = currentSong.second
+            setPlayerStatus(currentSong.isPlaying)
+        } else {
+            binding.mainPlayer.visibility = View.GONE
         }
-        musicPlayerService?.onSecondChanged = { second ->
+
+        // --- 서비스로부터의 콜백(리스너) 설정 ---
+        service.onSongChanged = { song ->
+            // 곡 정보가 바뀔 때 UI 전체를 다시 그림
+            updateUiAndListeners()
+        }
+        service.onSecondChanged = { second ->
             binding.mainPlayerSeekbar.progress = second
         }
-        musicPlayerService?.onStateChanged = { isPlaying ->
+        service.onStateChanged = { isPlaying ->
             setPlayerStatus(isPlaying)
         }
+
+        // --- UI의 클릭 리스너 설정 (여기로 통합) ---
+        binding.mainMiniplayerBtn.setOnClickListener { service.play() }
+        binding.mainPauseBtn.setOnClickListener { service.pause() }
     }
 
     private fun setPlayerStatus(isPlaying: Boolean) {
@@ -144,4 +138,3 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
-
