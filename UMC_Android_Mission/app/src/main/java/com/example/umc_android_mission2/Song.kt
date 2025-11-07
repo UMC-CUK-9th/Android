@@ -8,3 +8,4 @@ data class Song (
     var isPlaying: Boolean = false,
     val coverImg: Int? = null
 )
+

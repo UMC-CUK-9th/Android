@@ -56,3 +56,4 @@ dependencies {
     implementation("androidx.core:core-splashscreen:1.0.1")// splash screen 의존성
     implementation("me.relex:circleindicator:2.1.6") // CircleIndicator 의존성 추가
 }
+
