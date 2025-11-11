@@ -22,17 +22,11 @@ app:startDestination="@id/homeFragment"
     android:name="com.example.umc_android_mission2.AlbumFragment"
     android:label="앨범"
     tools:layout="@layout/fragment_album" >
+
     <argument
-        android:name="title"
-        app:argType="string"
-        android:defaultValue="Lost corner" />
-    <argument
-        android:name="artist"
-        app:argType="string"
-        android:defaultValue="Kenshi Yonezu" />
-    <argument
-        android:name="coverImg"
+        android:name="albumId"
         app:argType="integer" />
+
 </fragment>
 
 <fragment

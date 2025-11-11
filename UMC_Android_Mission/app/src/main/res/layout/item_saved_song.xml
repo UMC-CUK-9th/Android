@@ -44,13 +44,12 @@
 
     <ImageView
         android:id="@+id/item_saved_song_more_iv"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
+        android:layout_width="18dp"
+        android:layout_height="23dp"
         android:src="@drawable/btn_player_more"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-         />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/item_saved_song_play_iv"

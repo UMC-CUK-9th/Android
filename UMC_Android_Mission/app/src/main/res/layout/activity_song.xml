@@ -102,7 +102,7 @@
         app:layout_constraintTop_toBottomOf="@id/song_album_iv"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="15dp"/>
+        android:layout_marginTop="10dp"/>
 
     <TextView
         android:id="@+id/song_lyric2_tv"
@@ -114,7 +114,7 @@
         app:layout_constraintTop_toBottomOf="@id/song_lyric1_tv"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="4dp"/>
+        />
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -126,7 +126,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         >
         <ImageView
-            android:id="@+id/song_like_btn"
+            android:id="@+id/song_like_iv"
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:src="@drawable/ic_my_like_off"
@@ -136,6 +136,7 @@
             android:id="@+id/song_unlike_btn"
             android:layout_width="30dp"
             android:layout_height="30dp"
+            android:layout_marginStart="20dp"
             android:src="@drawable/btn_player_unlike_off"/>
     </LinearLayout>
 
@@ -149,7 +150,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/song_lyric2_tv"
-        android:layout_marginTop="25dp"
+        android:layout_marginTop="40dp"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
         android:max="100000"
@@ -167,7 +168,7 @@
         android:textSize="12sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/song_lyric2_tv"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="50dp"
         android:layout_marginStart="24dp"/>
 
     <TextView
@@ -179,7 +180,7 @@
         android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/song_lyric2_tv"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="50dp"
         android:layout_marginEnd="24dp"/>
 
 
@@ -194,14 +195,14 @@
         app:layout_constraintTop_toBottomOf="@id/song_endTime_tv"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp">
+        android:layout_marginTop="20dp">
 
         <ImageView
             android:id="@+id/song_btn_repeat_iv"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
+            android:layout_width="69dp"
+            android:layout_height="49dp"
             android:layout_marginEnd="30dp"
-            android:src="@drawable/nugu_btn_repeat_inactive"/>
+            android:src="@drawable/nugu_btn_repeat_inactive" />
         <ImageView
             android:id="@+id/song_btn_skipPrevious_iv"
             android:layout_width="50dp"
