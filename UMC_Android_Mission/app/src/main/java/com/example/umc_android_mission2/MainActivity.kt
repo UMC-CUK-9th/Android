@@ -25,13 +25,17 @@ class MainActivity : AppCompatActivity() {
 
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            val binder = service as MusicPlayerService.MusicPlayerBinder
-            musicPlayerService = binder.getService()
-            isServiceBound = true
-            updateUiAndListeners()
+            val binder = service as? MusicPlayerService.MusicPlayerBinder
+
+            if (binder != null) {
+                musicPlayerService = binder.getService()
+                isServiceBound = true
+                updateUiAndListeners()
+            }
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
+            musicPlayerService = null
             isServiceBound = false
         }
     }
