@@ -6,6 +6,8 @@ import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import androidx.core.content.edit
+import com.google.firebase.Firebase
+import com.google.firebase.database.database
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -13,148 +15,258 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MusicPlayerService : Service() {
 
     private val binder = MusicPlayerBinder()
-    private var song: Song = Song()
 
-    // --- SharedPreferences와 상태 저장을 위한 Key 정의 ---
+    private var songs: List<Song> = emptyList()
+    private var nowPos: Int = 0
+    private var coverImg: Int? = null
+    private var isPlaying: Boolean = false
+    private var second: Int = 0
+
+    // Firebase
+    private val database = Firebase.database
+
+    private val userLikedSongsRef = database.getReference("users/testUser/likedSongs")
+
+    // Coroutine, DB
+    private var timerJob: Job? = null
+    private val serviceScope = CoroutineScope(Dispatchers.Main)
+    private val db by lazy { AlbumDatabase.getInstance(this)!! }
+
+    // SharedPreferences
     companion object {
         const val PREFS_NAME = "MusicPlayerPrefs"
-        const val KEY_SONG_DATA = "song_data"
+        const val KEY_SONG_ID = "song_id"
     }
-
     private val sharedPreferences by lazy {
         getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
 
-    // 1. 코루틴 스코프와 타이머 작업을 위한 Job 생성
-    private val serviceScope = CoroutineScope(Dispatchers.Main)
-    private var timerJob: Job? = null
-
-    // 각 화면(Activity)이 상태 변화를 감지할 수 있도록 콜백 함수들을 정의
-    var onSongChanged: ((Song) -> Unit)? = null
+    // Callbacks
+    var onSongChanged: ((SongState) -> Unit)? = null
     var onSecondChanged: ((Int) -> Unit)? = null
     var onStateChanged: ((Boolean) -> Unit)? = null
 
-    // 서비스가 생성될 때 마지막 상태를 복원
+    // Lifecycle and Binder
     override fun onCreate() {
         super.onCreate()
-        loadState()
+        serviceScope.launch {
+            loadState()
+        }
     }
 
-    // Activity가 Service에 연결될 때 호출됨
-    override fun onBind(intent: Intent): IBinder {
-        return binder
-    }
+    override fun onBind(intent: Intent): IBinder = binder
 
-    // Activity가 Service와 통신할 수 있는 통로 역할
     inner class MusicPlayerBinder : Binder() {
         fun getService(): MusicPlayerService = this@MusicPlayerService
     }
 
-    fun setSong(newSong: Song) {
-        // 기존 타이머 코루틴이 있다면 취소
-        timerJob?.cancel()
-        this.song = newSong
+    // --- Public API ---
 
-        // 코루틴 스코프가 Main Dispatcher를 사용하므로 Handler 없이 직접 호출 가능
-        onSongChanged?.invoke(this.song)
-        onStateChanged?.invoke(this.song.isPlaying)
-        onSecondChanged?.invoke(this.song.second)
+    fun setPlaylist(newSongs: List<Song>, startPos: Int, albumCover: Int?) {
+        this.songs = newSongs
+        this.nowPos = startPos
+        this.coverImg = albumCover
+        syncLikesAndUpdate() // 재생 전, Firebase와 '좋아요' 상태를 먼저 동기화합니다.
+    }
 
-        if (this.song.isPlaying) {
-            startTimer()
-        }
+    fun playNext() {
+        val nextPos = if (songs.isEmpty()) -1 else (nowPos + 1) % songs.size
+        playSongAtIndex(nextPos)
+    }
+
+    fun playPrevious() {
+        val prevPos = if (songs.isEmpty()) -1 else (nowPos - 1 + songs.size) % songs.size
+        playSongAtIndex(prevPos)
     }
 
     fun play() {
-        if (!song.isPlaying) {
-            song.isPlaying = true
+        if (songs.isNotEmpty() && !isPlaying) {
+            this.isPlaying = true
             startTimer()
             onStateChanged?.invoke(true)
         }
     }
 
     fun pause() {
-        if (song.isPlaying) {
-            song.isPlaying = false
-            // 타이머 코루틴 취소
+        if (isPlaying) {
+            this.isPlaying = false
             timerJob?.cancel()
             onStateChanged?.invoke(false)
-            // 사용자가 직접 멈출 때 상태 저장
-            saveState()
         }
     }
 
-    fun getCurrentSong(): Song {
-        return song
+    fun toggleLike() {
+        if (songs.isEmpty() || nowPos >= songs.size) return
+
+        val currentSong = songs[nowPos]
+        currentSong.isLike = !currentSong.isLike
+
+        // RoomDB 업데이트 코드는 주석 처리
+        // serviceScope.launch(Dispatchers.IO) {
+        //     db.songDao().updateLike(currentSong.songIdx, currentSong.isLike)
+        // }
+
+        // Firebase에 '좋아요' 상태를 업데이트
+        if (currentSong.isLike) {
+            val likedSongData = mapOf(
+                "songIdx" to currentSong.songIdx,
+                "title" to currentSong.title,
+                "artist" to currentSong.artist,
+                "coverImg" to this.coverImg, // 서비스에 저장된 현재 앨범 커버
+            )
+            // songId를 key로 하여 전체 데이터 객체를 저장
+            userLikedSongsRef.child(currentSong.songIdx.toString()).setValue(likedSongData)
+        } else {
+            // '좋아요'를 취소하면 해당 데이터를 삭제
+            userLikedSongsRef.child(currentSong.songIdx.toString()).removeValue()
+        }
+
+        // UI 즉시 업데이트
+        onSongChanged?.invoke(getCurrentSong())
     }
 
-    // 2. Timer 대신 코루틴을 사용한 타이머 구현
+    fun getCurrentSong(): SongState {
+        return if (songs.isNotEmpty() && nowPos < songs.size) {
+            val song = songs[nowPos]
+            SongState(
+                songIdx = song.songIdx,
+                title = song.title,
+                artist = song.artist,
+                playtime = song.playtime,
+                coverImg = this.coverImg,
+                second = this.second,
+                isPlaying = this.isPlaying,
+                isLike = song.isLike
+            )
+        } else {
+            SongState()
+        }
+    }
+
+    // --- Internal Logic ---
+
+    private fun playSongAtIndex(index: Int) {
+        if (songs.isEmpty() || index == -1) {
+            stopAndClear()
+            return
+        }
+
+        this.nowPos = index
+        this.second = 0
+        this.isPlaying = true
+
+        timerJob?.cancel()
+        startTimer()
+
+        onSongChanged?.invoke(getCurrentSong())
+        onStateChanged?.invoke(true)
+        saveState()
+    }
+
     private fun startTimer() {
+        timerJob?.cancel()
+        val currentPlaytime = songs.getOrNull(nowPos)?.playtime ?: 0
+        if (currentPlaytime == 0) return
+
         timerJob = serviceScope.launch {
             while (isActive) {
-                if (song.second >= song.playtime) {
-                    song.isPlaying = false
-                    onStateChanged?.invoke(false)
-                    saveState() // 노래가 끝나도 상태 저장
-                    // 루프를 멈춰 코루틴 종료
+                if (second >= currentPlaytime) {
+                    playNext()
                     break
                 }
-                song.second++
-                onSecondChanged?.invoke(song.second)
                 delay(1000)
+                second++
+                onSecondChanged?.invoke(second)
             }
         }
     }
 
-    // 3. Service가 소멸될 때 CoroutineScope를 취소하고 상태를 저장
+    private fun stopAndClear() {
+        timerJob?.cancel()
+        songs = emptyList()
+        nowPos = 0
+        isPlaying = false
+        second = 0
+        onSongChanged?.invoke(getCurrentSong())
+        onStateChanged?.invoke(false)
+    }
+
     override fun onDestroy() {
         saveState()
         super.onDestroy()
         serviceScope.cancel()
     }
 
-    // --- 상태 저장 및 복원 함수 ---
-    private fun saveState() {
-        if (song.title.isBlank()) return // 저장할 제목이 없으면 저장하지 않음
-        
-        // 구분자(delimiter)를 사용해 Song 데이터를 하나의 문자열로 합침
-        val songDataString = listOf(
-            song.title,
-            song.singer,
-            song.second.toString(),
-            song.playtime.toString(),
-            song.isPlaying.toString(),
-            song.coverImg.toString()
-        ).joinToString(";;;")
+    // --- State Persistence & Sync ---
 
-        sharedPreferences.edit {
-            putString(KEY_SONG_DATA, songDataString)
+    private fun saveState() {
+        if (songs.isNotEmpty() && nowPos < songs.size) {
+            val songId = songs[nowPos].songIdx
+            sharedPreferences.edit {
+                putInt(KEY_SONG_ID, songId)
+            }
         }
     }
 
-    private fun loadState() {
-        val songDataString = sharedPreferences.getString(KEY_SONG_DATA, null)
-        if (songDataString.isNullOrBlank()) {
-            song = Song()
+    private suspend fun loadState() {
+        val songId = sharedPreferences.getInt(KEY_SONG_ID, 0)
+        if (songId == 0) return
+
+        val loadedSong: Song? = withContext(Dispatchers.IO) { db.songDao().getSong(songId) }
+        if (loadedSong == null) return
+
+        val loadedAlbum = withContext(Dispatchers.IO) { db.albumDao().getAlbum(loadedSong.albumIdx) }
+        if (loadedAlbum != null) {
+            val restoredSongs = withContext(Dispatchers.IO) { db.songDao().getSongsInAlbum(loadedSong.albumIdx) }
+            val restoredPos = restoredSongs.indexOfFirst { it.songIdx == songId }
+
+            if (restoredPos != -1) {
+                this.songs = restoredSongs
+                this.nowPos = restoredPos
+                this.coverImg = loadedAlbum.coverImg
+                this.second = 0
+                this.isPlaying = false // 앱 시작 시에는 항상 정지 상태
+
+                syncLikesAndUpdate(false) // 앱 시작 시에는 재생하지 않고 UI만 업데이트
+            }
+        }
+    }
+
+    /**
+     * Firebase와 '좋아요' 상태를 동기화하고, 재생 또는 UI 업데이트를 수행합니다.
+     */
+    private fun syncLikesAndUpdate(andPlay: Boolean = true) {
+        if (songs.isEmpty()) {
+            if (andPlay) playSongAtIndex(-1)
             return
         }
 
-        // 저장된 문자열을 구분자로 잘라서(split) 데이터 복원
-        val parts = songDataString.split(";;;")
-        if (parts.size == 6) {
-            song = Song(
-                title = parts[0],
-                singer = parts[1],
-                second = parts[2].toIntOrNull() ?: 0,
-                playtime = parts[3].toIntOrNull() ?: 0,
-                // 중요: 복원 시에는 항상 '멈춤' 상태로 로드하여 사용자가 직접 재생하도록 유도
-                isPlaying = false,
-                coverImg = parts[5].toIntOrNull()
-            )
+        userLikedSongsRef.get().addOnSuccessListener { dataSnapshot ->
+            // 이제 Firebase에 객체가 저장되지만, isLike 플래그를 동기화하는 로직은 여전히 유효합니다.
+            // 키(songId)가 존재하는지만 확인하면 되기 때문입니다.
+            val likedIds = dataSnapshot.children.mapNotNull { it.key?.toInt() }.toSet()
+            songs.forEach { song ->
+                song.isLike = song.songIdx in likedIds
+            }
+
+            if (andPlay) {
+                playSongAtIndex(nowPos)
+            } else {
+                onSongChanged?.invoke(getCurrentSong())
+                onStateChanged?.invoke(false)
+            }
+        }.addOnFailureListener {
+            // Firebase 로드 실패 시에도 기존 로직대로 재생은 되어야 합니다.
+            if (andPlay) playSongAtIndex(nowPos)
+            else {
+                onSongChanged?.invoke(getCurrentSong())
+                onStateChanged?.invoke(false)
+            }
         }
     }
 }
