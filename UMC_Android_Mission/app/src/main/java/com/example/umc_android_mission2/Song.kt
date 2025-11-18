@@ -25,5 +25,6 @@ data class Song(
     var music: String = "",
     var isTitleSong: Boolean = false,
     var isLike: Boolean = false,
-    var albumIdx: Int = 0
+    var albumIdx: Int = 0,
+    var coverImg: Int? = null // 앨범 커버 이미지 저장을 위한 필드 추가
 )

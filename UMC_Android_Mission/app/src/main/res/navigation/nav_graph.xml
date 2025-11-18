@@ -28,18 +28,27 @@ app:startDestination="@id/homeFragment"
         app:argType="integer" />
 
 </fragment>
+    
 
 <fragment
     android:id="@+id/searchFragment"
     android:name="com.example.umc_android_mission2.SearchFragment"
     android:label="검색"
      />
+    
+    
 
 <fragment
     android:id="@+id/lockerFragment"
     android:name="com.example.umc_android_mission2.LockerFragment"
     android:label="보관함"
     tools:layout="@layout/fragment_locker" />
+
+    <fragment
+        android:id="@+id/lookFragment"
+        android:name="com.example.umc_android_mission2.LookFragment"
+        android:label="둘러보기"
+        tools:layout="@layout/fragment_look" />
 
 
 </navigation>

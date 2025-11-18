@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:scrollbars="none">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        >
+
+        <TextView
+            android:id="@+id/look_title_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="25dp"
+            android:text="둘러보기"
+            android:textColor="@color/black"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <HorizontalScrollView
+            android:id="@+id/look_category_sv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="25dp"
+            android:scrollbars="none"
+            app:layout_constraintTop_toBottomOf="@id/look_title_tv">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/rounded_oval_background"
+                    android:backgroundTint="@color/blue"
+                    android:textColor="@color/white"
+                    android:paddingHorizontal="20dp"
+                    android:paddingVertical="10dp"
+                    android:text="차트"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:background="@drawable/rounded_oval_background"
+                    android:backgroundTint="@color/gray"
+                    android:textColor="@color/black"
+                    android:paddingHorizontal="20dp"
+                    android:paddingVertical="10dp"
+                    android:text="영상"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:background="@drawable/rounded_oval_background"
+                    android:backgroundTint="@color/gray"
+                    android:textColor="@color/black"
+                    android:paddingHorizontal="20dp"
+                    android:paddingVertical="10dp"
+                    android:text="장르"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:background="@drawable/rounded_oval_background"
+                    android:backgroundTint="@color/gray"
+                    android:textColor="@color/black"
+                    android:paddingHorizontal="20dp"
+                    android:paddingVertical="10dp"
+                    android:text="상황"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:background="@drawable/rounded_oval_background"
+                    android:backgroundTint="@color/gray"
+                    android:textColor="@color/black"
+                    android:paddingHorizontal="20dp"
+                    android:paddingVertical="10dp"
+                    android:text="분위기"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:background="@drawable/rounded_oval_background"
+                    android:backgroundTint="@color/gray"
+                    android:textColor="@color/black"
+                    android:paddingHorizontal="20dp"
+                    android:paddingVertical="10dp"
+                    android:text="추가"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <TextView
+            android:id="@+id/look_chart_title_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="30dp"
+            android:text="차트"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/look_category_sv" />
+
+        <ImageView
+            android:id="@+id/look_chart_arrow_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_marginStart="4dp"
+            android:adjustViewBounds="true"
+            android:src="@drawable/btn_main_arrow_more"
+            app:layout_constraintBottom_toBottomOf="@id/look_chart_title_tv"
+            app:layout_constraintStart_toEndOf="@id/look_chart_title_tv"
+            app:layout_constraintTop_toTopOf="@id/look_chart_title_tv" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

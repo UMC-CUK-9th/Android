@@ -53,8 +53,7 @@ class MainActivity : AppCompatActivity() {
         val navController = navHostFragment.navController
         binding.mainBnv.setupWithNavController(navController)
 
-        binding.mainPlayer.setOnClickListener {
-            val intent = Intent(this, SongActivity::class.java)
+        binding.mainPlayer.setOnClickListener { val intent = Intent(this, SongActivity::class.java)
             startActivity(intent)
         }
 
@@ -98,13 +97,14 @@ class MainActivity : AppCompatActivity() {
                 val nowPos = songs.indexOfFirst { it.songIdx == savedSongId }.takeIf { it != -1 } ?: 0
 
                 // 서비스에 전체 재생 목록과 시작 위치를 전달합니다.
-                musicPlayerService?.setPlaylist(songs, nowPos, album.coverImg)
+                musicPlayerService?.setPlaylist(songs, nowPos)
             } else {
                 // 재생할 노래가 없으면 플레이리스트를 비웁니다.
-                musicPlayerService?.setPlaylist(emptyList(), 0, null)
+                musicPlayerService?.setPlaylist(emptyList(), 0)
             }
         }
     }
+
     private fun updateUiAndListeners() {
         if (!isServiceBound) return
 

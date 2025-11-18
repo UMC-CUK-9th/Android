@@ -9,10 +9,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@Database(entities = [Album::class, Song::class], version = 3)
+@Database(entities = [Album::class, Song::class, User::class, Like::class], version = 5)
 abstract class AlbumDatabase: RoomDatabase() {
     abstract fun albumDao(): AlbumDao
     abstract fun songDao(): SongDao
+    abstract fun userDao(): UserDao
+    abstract fun likeDao(): LikeDao
+
 
     companion object {
         @Volatile
@@ -69,6 +72,7 @@ abstract class AlbumDatabase: RoomDatabase() {
                     // 받아온 앨범 ID를 모든 수록곡에 주입
                     val songsWithAlbumId = songs.map { song ->
                         song.albumIdx = albumId.toInt()
+                        song.coverImg = album.coverImg
                         song
                     }
 

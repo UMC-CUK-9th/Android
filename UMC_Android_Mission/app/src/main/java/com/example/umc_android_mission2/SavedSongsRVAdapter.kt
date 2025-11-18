@@ -6,14 +6,14 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.umc_android_mission2.databinding.ItemSavedSongBinding
 
-// 데이터 타입을 LikedSong으로 변경
 class SavedSongsRVAdapter() :
     RecyclerView.Adapter<SavedSongsRVAdapter.ViewHolder>() {
 
-    private val songList = ArrayList<LikedSong>()
+    // 어댑터가 사용할 데이터 타입을 Song으로 완전히 변경
+    private val songList = ArrayList<Song>()
 
     interface OnItemClickListener {
-        fun onMoreClick(song: LikedSong)
+        fun onMoreClick(song: Song) // 인터페이스의 파라미터 Song으로 변경
     }
     private lateinit var mItemClickListener: OnItemClickListener
     fun setMyItemClickListener(itemClickListener: OnItemClickListener) {
@@ -35,17 +35,17 @@ class SavedSongsRVAdapter() :
 
     override fun getItemCount(): Int = songList.size
 
-    // 외부에서 받아오는 데이터 타입을 LikedSong으로 변경
+    // 외부에서 데이터를 받아올 때도 Song 리스트를 사용
     @SuppressLint("NotifyDataSetChanged")
-    fun addSongs(songs: List<LikedSong>) {
+    fun addSongs(songs: List<Song>) {
         this.songList.clear()
         this.songList.addAll(songs)
         notifyDataSetChanged()
     }
 
     inner class ViewHolder(val binding: ItemSavedSongBinding) : RecyclerView.ViewHolder(binding.root) {
-        //  ViewHolder가 LikedSong 객체와 데이터를 바인딩하도록 수정
-        fun bind(song: LikedSong) {
+      //ViewHolder가 Song 객체와 데이터를 바인딩하도록 수정
+        fun bind(song: Song) {
             binding.itemSavedSongTitleTv.text = song.title
             binding.itemSavedSongArtistTv.text = song.artist
             song.coverImg?.let {
