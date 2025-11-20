@@ -5,13 +5,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 
-data class LikedSong(
-    val songIdx: Int,
-    val title: String,
-    val artist: String,
-    val coverImg: Int?
-)
-
 @Dao
 interface SongDao {
     @Insert
@@ -32,20 +25,8 @@ interface SongDao {
     @Query("UPDATE SongTable SET isLike = :isLike WHERE songIdx = :songId")
     fun updateLike(songId: Int, isLike: Boolean)
 
-    @Query("""
-        SELECT s.songIdx, s.title, s.artist, a.coverImg
-        FROM SongTable as s
-        INNER JOIN AlbumTable as a ON s.albumIdx = a.albumIdx
-        WHERE s.isLike = 1
-    """)
-    fun getLikedSongs(): List<LikedSong>
-
-    // 1. Firebase에서 받아온 ID 목록으로 '좋아요' 노래 정보를 조회하는 함수 추가
-    @Query("""
-        SELECT s.songIdx, s.title, s.artist, a.coverImg
-        FROM SongTable as s
-        INNER JOIN AlbumTable as a ON s.albumIdx = a.albumIdx
-        WHERE s.songIdx IN (:songIds)
-    """)
-    fun getLikedSongsByIds(songIds: List<Int>): List<LikedSong>
+    // isLike가 true인 모든 Song 객체를 가져오는 쿼리로 변경
+    // 이제 Song 객체에 coverImg가 포함되어 있으므로 JOIN이 필요 없음
+    @Query("SELECT * FROM SongTable WHERE isLike = 1")
+    fun getLikedSongs(): List<Song>
 }

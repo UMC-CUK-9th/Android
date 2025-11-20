@@ -1,18 +1,24 @@
 package com.example.umc_android_mission2
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.umc_android_mission2.databinding.FragmentSavedAlbumsBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-class SavedAlbumsFragment: Fragment() {
+class SavedAlbumsFragment: Fragment(), SavedAlbumRVAdapter.OnItemClickListener {
     private var _binding: FragmentSavedAlbumsBinding? = null
     private val binding get() = _binding!!
-
-    private val albumData = mutableListOf<SavedAlbumData>()
+    private lateinit var savedAlbumRVAdapter: SavedAlbumRVAdapter
+    private lateinit var albumDB: AlbumDatabase
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -20,33 +26,52 @@ class SavedAlbumsFragment: Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentSavedAlbumsBinding.inflate(inflater, container, false)
+        albumDB = AlbumDatabase.getInstance(requireContext())!!
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        initRecyclerView()
+    }
 
-        // 더미 데이터 추가
-        addDummyData()
+    override fun onResume() {
+        super.onResume()
+        loadLikedAlbums()
+    }
 
-        // 리사이클러뷰 어댑터 설정
-        val savedAlbumRVAdapter = SavedAlbumRVAdapter(albumData)
+    private fun initRecyclerView() {
+        savedAlbumRVAdapter = SavedAlbumRVAdapter()
+        savedAlbumRVAdapter.setMyItemClickListener(this)
         binding.lockerSavedAlbumListRv.adapter = savedAlbumRVAdapter
         binding.lockerSavedAlbumListRv.layoutManager = LinearLayoutManager(context)
     }
 
-    private fun addDummyData() {
-        albumData.apply {
-            add(SavedAlbumData("Lost corner", "Kenshi Yonezu", R.drawable.img_album_lost, info = "2024.08.21 | 정규 | J-Pop"))
-            add(SavedAlbumData("Butter", "방탄소년단 (BTS)", R.drawable.img_album_exp, "2021.05.21 | 싱글 | 댄스"))
-            add(SavedAlbumData("Lilac", "아이유 (IU)", R.drawable.img_album_exp2, "2021.03.25 | 정규 | 팝"))
-            add(SavedAlbumData(title = "Spinning Globe", artist ="Kenshi Yonezu", coverImg = R.drawable.img_album_spinning, info = "2023.07.17 | 정규 | J-Pop" ))
-            add(SavedAlbumData("Lost corner", "Kenshi Yonezu", R.drawable.img_album_lost, info = "2024.08.21 | 정규 | J-Pop"))
-            add(SavedAlbumData("Butter", "방탄소년단 (BTS)", R.drawable.img_album_exp, "2021.05.21 | 싱글 | 댄스"))
-            add(SavedAlbumData("Lilac", "아이유 (IU)", R.drawable.img_album_exp2, "2021.03.25 | 정규 | 팝"))
-            add(SavedAlbumData(title = "Spinning Globe", artist ="Kenshi Yonezu", coverImg = R.drawable.img_album_spinning, info = "2023.07.17 | 정규 | J-Pop" ))
-
+    private fun loadLikedAlbums() {
+        val userId = getJwt(requireContext())
+        lifecycleScope.launch(Dispatchers.IO) {
+            // 현재 사용자가 '좋아요'한 앨범의 ID 목록을 가져옴
+            val likedAlbumIds = albumDB.likeDao().getLikedAlbumIds(userId)
+            // ID 목록을 사용해 실제 앨범 정보 목록을 가져옴
+            val likedAlbums = albumDB.albumDao().getAlbumsByIds(likedAlbumIds)
+            
+            withContext(Dispatchers.Main) {
+                savedAlbumRVAdapter.addAlbums(likedAlbums)
+            }
         }
+    }
+
+    override fun onRemoveAlbum(albumId: Int) {
+        val userId = getJwt(requireContext())
+        lifecycleScope.launch(Dispatchers.IO) {
+            // LikeTable에서 해당 데이터를 삭제
+            albumDB.likeDao().delete(userId, albumId)
+        }
+    }
+
+    private fun getJwt(context: Context): Int {
+        val spf = context.getSharedPreferences("auth", AppCompatActivity.MODE_PRIVATE)
+        return spf.getInt("jwt", 0)
     }
 
     override fun onDestroyView() {

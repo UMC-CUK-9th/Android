@@ -22,6 +22,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".SongActivity" />
+        <activity android:name=".LoginActivity" />
+        <activity android:name=".SignUpActivity" />
 
         <!-- 음악 재생 서비스 등록 -->
         <service android:name=".MusicPlayerService" />
