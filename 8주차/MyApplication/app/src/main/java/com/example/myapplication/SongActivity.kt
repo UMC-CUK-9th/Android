@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.myapplication.databinding.SongActivityBinding
+// Firebase 사용시
 import com.google.firebase.Firebase
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.database
@@ -27,10 +28,11 @@ class SongActivity : AppCompatActivity() {
     private val songs = arrayListOf<Song>()
 
     //DB 주석
-    //private lateinit var songDB: SongDatabase
+    private lateinit var songDB: SongDatabase
 
-    private val database= Firebase.database //Firebase 인스턴스
-    private val songRef=database.getReference("songs") //songs 경로 참조
+    //Firebase 인스턴스
+//    private val database= Firebase.database
+//    private val songRef=database.getReference("songs") //songs 경로 참조
 
     private var timer: Timer? = null
     private var nowPos = 0
@@ -44,7 +46,6 @@ class SongActivity : AppCompatActivity() {
         setControlsEnabled(true)
 
         initPlayList()
-        //initSong()
         initClickListener()
     }
 
@@ -70,6 +71,9 @@ class SongActivity : AppCompatActivity() {
         songs[nowPos].isPlaying = false
         setPlayerStatus(false)
 
+        //PlaybackStore에도 현재(nowPos) 기준 상태를 저장
+        savePlayback()
+
         // 다른 화면(미니플레이어, 앨범 프래그먼트)과 데이터 동기화를 위해 현재 곡의 전체 정보를 JSON으로 저장
         val songJson = gson.toJson(songs[nowPos])
 
@@ -77,6 +81,36 @@ class SongActivity : AppCompatActivity() {
             .edit()
             .putInt("songId", songs[nowPos].id) // 기존 로직 유지를 위해 id도 저장
             .putString("song_json", songJson)   // 곡 전체 정보를 JSON으로 저장
+            .apply()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (songs.isEmpty()) return
+
+        // 현재 위치/상태 계산
+        val posSecFromPlayer = (mediaPlayer?.currentPosition ?: 0) / 1000
+        val playTime = songs[nowPos].playTime
+        val percent = binding.songProgress.progress
+        val posSecFromPercent = if (playTime > 0) (percent * playTime) / 100 else 0
+
+        songs[nowPos].second = maxOf(posSecFromPlayer, posSecFromPercent)
+
+        // 여기서는 "지금 어떤 곡이냐"만 정확히 저장해주면 되니까
+        val cur = songs[nowPos]
+
+        // PlaybackStore에도 현재 곡/위치/재생상태 저장
+        val id = cur.id
+        val posMs = cur.second * 1000
+        val playing = cur.isPlaying
+        PlaybackStore.save(this, PlaybackState(id, posMs, playing))
+
+        // song_json에도 현재 곡 전체 정보 저장
+        val songJson = gson.toJson(cur)
+        getSharedPreferences("song", MODE_PRIVATE)
+            .edit()
+            .putInt("songId", cur.id)
+            .putString("song_json", songJson)
             .apply()
     }
 
@@ -89,38 +123,48 @@ class SongActivity : AppCompatActivity() {
     }
 
     private fun initPlayList() {
-        //songDB = SongDatabase.getInstance(this)!!
-        //songs.clear()
-        //songs.addAll(songDB.songDao().getSongs())
+        // Room DB 사용
+        songDB = SongDatabase.getInstance(this)!!
+        songs.clear()
+        songs.addAll(songDB.songDao().getSongs())
 
-        //Firebase에서 데이터 가져오기
-        songRef.get().addOnSuccessListener { dataSnapshot ->
-            // 임시 리스트에 Firebase에서 가져온 데이터 담기
-            val songListFromFirebase = mutableListOf<Song>()
-            for (snapshot in dataSnapshot.children) {
-                snapshot.getValue(Song::class.java)?.let { song ->
-                    snapshot.key?.toIntOrNull()?.let { song.id = it }
-                    songListFromFirebase.add(song)
-                }
-            }
+        //Firebase에서 데이터 가져오기 (지금은 사용 안함, 주석만 유지)
+//        songRef.get().addOnSuccessListener { dataSnapshot ->
+//            // 임시 리스트에 Firebase에서 가져온 데이터 담기
+//            val songListFromFirebase = mutableListOf<Song>()
+//            for (snapshot in dataSnapshot.children) {
+//                snapshot.getValue(Song::class.java)?.let { song ->
+//                    snapshot.key?.toIntOrNull()?.let { song.id = it }
+//                    songListFromFirebase.add(song)
+//                }
+//            }
+//
+//            songs.clear()
+//            // 가져온 리스트를 song.id 기준으로 오름차순 정렬하여 songs 리스트에 추가
+//            songs.addAll(songListFromFirebase.sortedBy { it.id })
+//
+//            if (songs.isEmpty()) {
+//                Toast.makeText(this, "서버에서 곡을 찾지 못했습니다.", Toast.LENGTH_SHORT).show()
+//                return@addOnSuccessListener
+//            }
+//
+//            setControlsEnabled(true)
+//            initSong()
+//        }
+//            .addOnFailureListener { e ->
+//                Log.e("SongActivity", "Firebase 로딩 실패", e)
+//                Toast.makeText(this, "네트워크 오류로 곡을 불러오지 못했습니다.", Toast.LENGTH_SHORT).show()
+//                setControlsEnabled(false)
+//            }
 
-            songs.clear()
-            // 가져온 리스트를 song.id 기준으로 오름차순 정렬하여 songs 리스트에 추가
-            songs.addAll(songListFromFirebase.sortedBy { it.id })
-
-            if (songs.isEmpty()) {
-                Toast.makeText(this, "서버에서 곡을 찾지 못했습니다.", Toast.LENGTH_SHORT).show()
-                return@addOnSuccessListener
-            }
-
-            setControlsEnabled(true)
-            initSong()
+        if (songs.isEmpty()) {
+            Toast.makeText(this, "재생할 노래가 없습니다.", Toast.LENGTH_SHORT).show()
+            setControlsEnabled(false)
+            return
         }
-            .addOnFailureListener { e ->
-                Log.e("SongActivity", "Firebase 로딩 실패", e)
-                Toast.makeText(this, "네트워크 오류로 곡을 불러오지 못했습니다.", Toast.LENGTH_SHORT).show()
-                setControlsEnabled(false)
-            }
+
+        // Room에서는 동기 로드라 여기서 바로 초기화 가능
+        initSong()
     }
 
     private fun savePlayback() {
@@ -128,12 +172,11 @@ class SongActivity : AppCompatActivity() {
 
         val cur = songs[nowPos]
         val id = cur.id
-        val posMs = cur.second * 1000           // 초 → ms
+        val posMs = cur.second * 1000           // 초 → ms (Timer에서 관리하는 second 기준)
         val playing = cur.isPlaying
 
         PlaybackStore.save(this, PlaybackState(id, posMs, playing))
     }
-
 
     private fun initClickListener() {
         binding.songActivityArrowDown.setOnClickListener { finish() }
@@ -145,8 +188,8 @@ class SongActivity : AppCompatActivity() {
         binding.songActivityPreviousPlayerImgIv.setOnClickListener { moveSong(-1) }
 
         binding.songActivityLikeImgIv.setOnClickListener {
-            //setLike(songs[nowPos].isLike)
-            setLike()
+            setLike(songs[nowPos].isLike)
+            //setLike()
         }
     }
 
@@ -161,7 +204,6 @@ class SongActivity : AppCompatActivity() {
         val songId = spf.getInt("songId", 0)
         nowPos = getPlayingSongPosition(songId).coerceIn(0, songs.lastIndex)
 
-
         PlaybackStore.read(this)?.let { st ->
             if (st.songId != 0) nowPos = getPlayingSongPosition(st.songId)
             songs[nowPos].second = (st.posMs / 1000).coerceAtLeast(0)
@@ -172,50 +214,50 @@ class SongActivity : AppCompatActivity() {
         startTimer()
     }
 
-//    //DB의 setLike
-//    private fun setLike(isLike: Boolean){
-//        songs[nowPos].isLike=!isLike
-//        songDB.songDao().updateIsLikeById(!isLike,songs[nowPos].id)
-//
-//        if(!isLike){
-//            binding.songActivityLikeImgIv.setImageResource(R.drawable.ic_my_like_on)
-//        }else{
-//            binding.songActivityLikeImgIv.setImageResource(R.drawable.ic_my_like_off)
-//        }
-//    }
+    //DB의 setLike
+    private fun setLike(isLike: Boolean){
+        songs[nowPos].isLike = !isLike
+        songDB.songDao().updateIsLikeById(!isLike, songs[nowPos].id)
 
-    //Firebase의 setLike
-    private fun setLike() {
-        val currentSong = songs[nowPos]
-        val newIsLike = !currentSong.isLike
-
-        // 1. UI와 메모리 데이터 즉시 업데이트 (낙관적 UI 업데이트)
-        currentSong.isLike = newIsLike
-        binding.songActivityLikeImgIv.setImageResource(
-            if (newIsLike) R.drawable.ic_my_like_on
-            else R.drawable.ic_my_like_off
-        )
-
-        // 2. Firebase에 데이터 저장 요청
-        songRef.child(currentSong.id.toString()).child("isLike").setValue(newIsLike)
-            .addOnFailureListener { e ->
-                // 3. Firebase 저장 실패 시 롤백
-                Log.e("Firebase", "좋아요 상태 저장 실패", e)
-                Toast.makeText(this, "네트워크 오류로 좋아요 상태를 저장하지 못했습니다.", Toast.LENGTH_SHORT).show()
-
-                // 메모리 데이터 롤백
-                currentSong.isLike = !newIsLike
-
-                // UI 롤백 (현재 보고 있는 곡이 롤백 대상 곡일 경우에만)
-                if (nowPos == getPlayingSongPosition(currentSong.id)) {
-                    binding.songActivityLikeImgIv.setImageResource(
-                        if (!newIsLike) R.drawable.ic_my_like_on
-                        else R.drawable.ic_my_like_off
-                    )
-                }
-            }
+        if (!isLike) {
+            binding.songActivityLikeImgIv.setImageResource(R.drawable.ic_my_like_on)
+        } else {
+            binding.songActivityLikeImgIv.setImageResource(R.drawable.ic_my_like_off)
+        }
     }
 
+    //Firebase의 setLike (현재는 사용 안하고 주석 유지)
+//    private fun setLike() {
+//        val currentSong = songs[nowPos]
+//
+//        val newIsLike = !currentSong.isLike
+//
+//        // 1. UI와 메모리 데이터 즉시 업데이트 (낙관적 UI 업데이트)
+//        currentSong.isLike = newIsLike
+//        binding.songActivityLikeImgIv.setImageResource(
+//            if (newIsLike) R.drawable.ic_my_like_on
+//            else R.drawable.ic_my_like_off
+//        )
+//
+//        // 2. Firebase에 데이터 저장 요청
+//        songRef.child(currentSong.id.toString()).child("isLike").setValue(newIsLike)
+//            .addOnFailureListener { e ->
+//                // 3. Firebase 저장 실패 시 롤백
+//                Log.e("Firebase", "좋아요 상태 저장 실패", e)
+//                Toast.makeText(this, "네트워크 오류로 좋아요 상태를 저장하지 못했습니다.", Toast.LENGTH_SHORT).show()
+//
+//                // 메모리 데이터 롤백
+//                currentSong.isLike = !newIsLike
+//
+//                // UI 롤백 (현재 보고 있는 곡이 롤백 대상 곡일 경우에만)
+//                if (nowPos == getPlayingSongPosition(currentSong.id)) {
+//                    binding.songActivityLikeImgIv.setImageResource(
+//                        if (!newIsLike) R.drawable.ic_my_like_on
+//                        else R.drawable.ic_my_like_off
+//                    )
+//                }
+//            }
+//    }
 
     private fun moveSong(direct: Int) {
         if (nowPos + direct !in 0..songs.lastIndex) {
@@ -224,7 +266,7 @@ class SongActivity : AppCompatActivity() {
         }
 
         //현재 곡이 재생 중인지 기억
-        val wasPlaying=songs.getOrNull(nowPos)?.isPlaying?:false
+        val wasPlaying = songs.getOrNull(nowPos)?.isPlaying ?: false
 
         nowPos += direct
 
@@ -233,12 +275,16 @@ class SongActivity : AppCompatActivity() {
         mediaPlayer?.release()
         mediaPlayer = null
 
+        //새 곡은 항상 0초에서 시작
+        songs[nowPos].second = 0
         //새 곡에도 이전 재생 상태를 그대로 전달
-        //songs[nowPos].second=0
-        songs[nowPos].isPlaying=wasPlaying
+        songs[nowPos].isPlaying = wasPlaying
 
         setPlayer(songs[nowPos])
         startTimer()
+
+        //곡이 변경되면 Playback에도 반영
+        savePlayback()
     }
 
     private fun getPlayingSongPosition(songId: Int): Int {
@@ -258,8 +304,8 @@ class SongActivity : AppCompatActivity() {
         )
 
         // 시작/끝 시간
-        binding.songStartTime.text = String.format("%02d:%02d",song.second/60,song.second%60)
-        binding.songEndTime.text = String.format("%02d:%02d",song.playTime/60,song.playTime%60)
+        binding.songStartTime.text = String.format("%02d:%02d", song.second/60, song.second%60)
+        binding.songEndTime.text = String.format("%02d:%02d", song.playTime/60, song.playTime%60)
 
         // 초기 퍼센트(0~100)
         val playTime = song.playTime
@@ -267,12 +313,12 @@ class SongActivity : AppCompatActivity() {
         //binding.songProgress.progress = (song.second*1000/song.playTime)
         binding.songProgress.progress = percent.coerceIn(0, 100)
 
-        // 오디오 리소스
+        // 오디오 리소스 (지금 raw에 파일 없으면 music == 0 이라서 그냥 토스트 찍고 재생 안 함)
 //        val music = resources.getIdentifier(song.music, "raw", packageName)
 //        if (music == 0) {
 //            Toast.makeText(this, "오디오 리소스를 찾을 수 없습니다: ${song.music}", Toast.LENGTH_SHORT).show()
 //            mediaPlayer?.release(); mediaPlayer = null
-//            setPlayerStatus(isPlaying = true)
+//            setPlayerStatus(isPlaying = false)
 //            return
 //        }
 //
@@ -281,7 +327,8 @@ class SongActivity : AppCompatActivity() {
 //            // 저장된 위치로 시킹
 //            seekTo((song.second).coerceAtLeast(0) * 1000)
 //            setOnCompletionListener {
-//                setPlayerStatus(isPlaying=true)
+//                // 재생 완료 시: 현재 곡 정지 후 다음 곡으로
+//                setPlayerStatus(false)
 //                moveSong(+1)
 //            }
 //        }
@@ -365,6 +412,7 @@ class SongActivity : AppCompatActivity() {
                         continue
                     }
 
+                    // ✅ 재생 완료 처리: 먼저 다음 곡으로 전환
                     if (second >= playTime) {
                         if (songs.isNotEmpty()) {
                             // 마지막 곡이 아니면 다음 곡으로

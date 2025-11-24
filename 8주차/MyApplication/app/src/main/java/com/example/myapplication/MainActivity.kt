@@ -23,15 +23,15 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: MainActivityBinding
 
     // 미니플레이어용 상태
-    //private lateinit var songDB: SongDatabase
+    private lateinit var songDB: SongDatabase
     private val songs = arrayListOf<Song>()
     private var nowPos = 0
     private var miniTimer: MiniTimer? = null
     private var isMiniPlaying: Boolean = false
 
     //Firebase 참조 변수 추가
-    private val database= Firebase.database
-    private val songRef=database.getReference("songs")
+//    private val database= Firebase.database
+//    private val songRef=database.getReference("songs")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,13 +39,14 @@ class MainActivity : AppCompatActivity() {
         binding = MainActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        loadSongsFromFirebase()
+        //loadSongsFromFirebase()
 
         // DB/플레이리스트 준비
-//        inputDummySongs(applicationContext)
-//        songDB = SongDatabase.getInstance(this)!!
-//        songs.clear()
-//        songs.addAll(songDB.songDao().getSongs())
+        inputDummySongs(applicationContext)
+        inputDummyAlbums(applicationContext)
+        songDB = SongDatabase.getInstance(this)!!
+        songs.clear()
+        songs.addAll(songDB.songDao().getSongs())
 
         // 컨테이너 기본 프래그먼트
         supportFragmentManager.beginTransaction()
@@ -70,39 +71,39 @@ class MainActivity : AppCompatActivity() {
 
 
     // Firebase 데이터 로딩 함수 구현
-    private fun loadSongsFromFirebase() {
-        // Firebase에서 "songs" 경로의 데이터를 한 번 가져옴
-        songRef.get().addOnSuccessListener { dataSnapshot ->
-            songs.clear() // 기존 목록을 비움
-            for (snapshot in dataSnapshot.children) {
-                // Firebase 데이터를 Song 객체로 변환하여 리스트에 추가
-                snapshot.getValue(Song::class.java)?.let { song ->
-                    snapshot.key?.toIntOrNull()?.let { song.id = it }
-                    songs.add(song)
-                }
-            }
-            Log.d("MainActivity", "Firebase loaded, songs.size=${songs.size}")
-            songs.forEach {
-                Log.d("MainActivity", "song id=${it.id}, title=${it.title}, singer=${it.singer}")
-            }
+//    private fun loadSongsFromFirebase() {
+//        // Firebase에서 "songs" 경로의 데이터를 한 번 가져옴
+//        songRef.get().addOnSuccessListener { dataSnapshot ->
+//            songs.clear() // 기존 목록을 비움
+//            for (snapshot in dataSnapshot.children) {
+//                // Firebase 데이터를 Song 객체로 변환하여 리스트에 추가
+//                snapshot.getValue(Song::class.java)?.let { song ->
+//                    snapshot.key?.toIntOrNull()?.let { song.id = it }
+//                    songs.add(song)
+//                }
+//            }
+//            Log.d("MainActivity", "Firebase loaded, songs.size=${songs.size}")
+//            songs.forEach {
+//                Log.d("MainActivity", "song id=${it.id}, title=${it.title}, singer=${it.singer}")
+//            }
 
             // 데이터 로딩이 완료된 후, UI 초기화 작업
             // onStart의 로직을 그대로 가져오는 함수
-            setupMiniPlayerOnStart()
-
-        }.addOnFailureListener {
-                e ->
-            Log.e("MainActivity", "Firebase load failed", e)
-            // 데이터 로딩 실패 시 처리 토스트 메세지 출력
-            Toast.makeText(this, "데이터 로딩에 실패했습니다.", Toast.LENGTH_SHORT).show()
-        }
-    }
+//            setupMiniPlayerOnStart()
+//
+//        }.addOnFailureListener {
+//                e ->
+//            Log.e("MainActivity", "Firebase load failed", e)
+//            // 데이터 로딩 실패 시 처리 토스트 메세지 출력
+//            Toast.makeText(this, "데이터 로딩에 실패했습니다.", Toast.LENGTH_SHORT).show()
+//        }
+//    }
 
 
     // onStart의 로직을 새 함수로 분리
     private fun setupMiniPlayerOnStart() {
         // onStart에 있던 코드를 그대로 여기로 옮김
-        //if (songs.isEmpty()) return
+        if (songs.isEmpty()) return
 
         // SongActivity에서 저장해 둔 song_json(현재 곡 전체 정보) 기준으로 복원
         val spf = getSharedPreferences("song", MODE_PRIVATE)
@@ -150,19 +151,13 @@ class MainActivity : AppCompatActivity() {
         setMiniPlayIcon(isMiniPlaying)
     }
 
-    // 기존 onStart는 비워두거나, 최소한의 로직만 남김
-//    override fun onStart() {
-//        super.onStart()
-//        // 이제 데이터 로딩은 onCreate -> loadSongsFromFirebase에서 처리
-//        if (songs.isNotEmpty()) {
-//            setupMiniPlayerOnStart() // 화면이 다시 보일 때마다 UI를 갱신하고 싶다면 호출
-//        }
-//    }
-
     override fun onStart() {
         super.onStart()
 
         if (songs.isEmpty()) return
+        if (songs.isNotEmpty()) {
+            setupMiniPlayerOnStart()
+        }
 
         val spf = getSharedPreferences("song", MODE_PRIVATE)
         val songJson = spf.getString("song_json", null)
@@ -434,31 +429,53 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
-// 더미 데이터 주입 로직
-//private fun inputDummySongs(context: Context){
-//    val songDB= SongDatabase.getInstance(context.applicationContext)!!
-//    val songs=songDB.songDao().getSongs()
-//    if(songs.isNotEmpty()) return
-//
-//    songDB.songDao().insert(
-//        Song("Lilac","아이유 (IU)",0,200,false,"music_lilac",R.drawable.img_album_exp2,false)
-//    )
-//    songDB.songDao().insert(
-//        Song("Flu","아이유 (IU)",0,200,false,"music_flu",R.drawable.img_album_exp2,false)
-//    )
-//    songDB.songDao().insert(
-//        Song("Butter","방탄소년단 (BTS)",0,190,false,"music_butter",R.drawable.img_album_exp,false)
-//    )
-//    songDB.songDao().insert(
-//        Song("Next Level","에스파 (AESPA)",0,210,false,"music_next",R.drawable.img_album_exp3,false)
-//    )
-//    songDB.songDao().insert(
-//        Song("Boy with Luv","방탄소년단 (BTS)",0,230,false,"music_boy",R.drawable.img_album_exp4,false)
-//    )
-//    songDB.songDao().insert(
-//        Song("BBoom BBoom","모모랜드 (MOMOLAND)",0,240,false,"music_bboom",R.drawable.img_album_exp5,false)
-//    )
-//
-//    val _songs = songDB.songDao().getSongs()
-//    Log.d("DB data", _songs.toString())
-//}
+ //더미 데이터 주입 로직
+private fun inputDummySongs(context: Context){
+    val songDB= SongDatabase.getInstance(context.applicationContext)!!
+    val songs=songDB.songDao().getSongs()
+    if(songs.isNotEmpty()) return
+
+    songDB.songDao().insert(
+        Song("Lilac","아이유 (IU)",0,200,false,"music_lilac",R.drawable.img_album_exp2,false)
+    )
+    songDB.songDao().insert(
+        Song("Flu","아이유 (IU)",0,200,false,"music_flu",R.drawable.img_album_exp2,false)
+    )
+    songDB.songDao().insert(
+        Song("Butter","방탄소년단 (BTS)",0,190,false,"music_butter",R.drawable.img_album_exp,false)
+    )
+    songDB.songDao().insert(
+        Song("Next Level","에스파 (AESPA)",0,210,false,"music_next",R.drawable.img_album_exp3,false)
+    )
+    songDB.songDao().insert(
+        Song("Boy with Luv","방탄소년단 (BTS)",0,230,false,"music_boy",R.drawable.img_album_exp4,false)
+    )
+    songDB.songDao().insert(
+        Song("BBoom BBoom","모모랜드 (MOMOLAND)",0,240,false,"music_bboom",R.drawable.img_album_exp5,false)
+    )
+
+    val _songs = songDB.songDao().getSongs()
+    Log.d("DB data", _songs.toString())
+}
+//더미 데이터 주입 로직
+private fun inputDummyAlbums(context: Context){
+    val songDB= SongDatabase.getInstance(context.applicationContext)!!
+    val albums=songDB.albumDao().getAlbums()
+    if(albums.isNotEmpty()) return
+
+    songDB.albumDao().insert(
+        Album(0,"IU 5th Album : 'LILAC'","아이유 (IU)",R.drawable.img_album_exp2)
+    )
+    songDB.albumDao().insert(
+        Album(1,"Butter","방탄소년단 (BTS)",R.drawable.img_album_exp)
+    )
+    songDB.albumDao().insert(
+        Album(2,"Next Level Remixes","에스파 (AESPA)",R.drawable.img_album_exp3)
+    )
+    songDB.albumDao().insert(
+        Album(3,"MAP OF THE SEOUL : PERSONA","방탄소년단 (BTS)",R.drawable.img_album_exp4)
+    )
+    songDB.albumDao().insert(
+        Album(4,"GREAT!","모모랜드 (MOMOLAND)",R.drawable.img_album_exp5)
+    )
+}
