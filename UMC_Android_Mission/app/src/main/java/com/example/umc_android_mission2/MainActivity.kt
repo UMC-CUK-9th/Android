@@ -46,12 +46,14 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val serviceIntent = Intent(this, MusicPlayerService::class.java)
-        bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
-
+        // 네비게이션 컨트롤러를 BottomNavigationView와 표준 방식으로 연결합니다.
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.main_frm) as NavHostFragment
         val navController = navHostFragment.navController
         binding.mainBnv.setupWithNavController(navController)
+
+        // 음악 플레이어 서비스 바인딩
+        val serviceIntent = Intent(this, MusicPlayerService::class.java)
+        bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
 
         binding.mainPlayer.setOnClickListener { val intent = Intent(this, SongActivity::class.java)
             startActivity(intent)

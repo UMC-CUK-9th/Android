@@ -48,7 +48,12 @@ class SavedAlbumsFragment: Fragment(), SavedAlbumRVAdapter.OnItemClickListener {
     }
 
     private fun loadLikedAlbums() {
-        val userId = getJwt(requireContext())
+        val userId = getMemberId(requireContext())
+        if (userId == 0) {
+            savedAlbumRVAdapter.addAlbums(emptyList())
+            return
+        }
+
         lifecycleScope.launch(Dispatchers.IO) {
             // 현재 사용자가 '좋아요'한 앨범의 ID 목록을 가져옴
             val likedAlbumIds = albumDB.likeDao().getLikedAlbumIds(userId)
@@ -62,16 +67,21 @@ class SavedAlbumsFragment: Fragment(), SavedAlbumRVAdapter.OnItemClickListener {
     }
 
     override fun onRemoveAlbum(albumId: Int) {
-        val userId = getJwt(requireContext())
+        val userId = getMemberId(requireContext())
+        if (userId == 0) return
+
         lifecycleScope.launch(Dispatchers.IO) {
             // LikeTable에서 해당 데이터를 삭제
             albumDB.likeDao().delete(userId, albumId)
+            withContext(Dispatchers.Main) {
+                loadLikedAlbums()
+            }
         }
     }
 
-    private fun getJwt(context: Context): Int {
+    private fun getMemberId(context: Context): Int {
         val spf = context.getSharedPreferences("auth", AppCompatActivity.MODE_PRIVATE)
-        return spf.getInt("jwt", 0)
+        return spf.getInt("memberId", 0)
     }
 
     override fun onDestroyView() {
