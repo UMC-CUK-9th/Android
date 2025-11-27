@@ -29,6 +29,9 @@ class LockerFragment : Fragment() {
     ): View {
         _binding = FragmentLockerBinding.inflate(inflater, container, false)
 
+        // ViewModel의 상태를 SharedPreferences와 동기화
+        initAuthViewModel()
+
         val lockerVPAdapter = LockerVPAdapter(this)
         binding.lockerContentVp.adapter = lockerVPAdapter
         TabLayoutMediator(binding.lockerContentTb, binding.lockerContentVp) { tab, position ->
@@ -43,6 +46,18 @@ class LockerFragment : Fragment() {
     override fun onStart() {
         super.onStart()
         updateUiBasedOnLoginState()
+    }
+
+    // 앱 시작 시 SharedPreferences의 인증 정보를 ViewModel로 불러오는 함수
+    private fun initAuthViewModel() {
+        val spf = activity?.getSharedPreferences("auth", AppCompatActivity.MODE_PRIVATE)
+        val accessToken = spf?.getString("accessToken", null)
+        val memberId = spf?.getInt("memberId", 0)
+
+        if (accessToken != null && memberId != 0 && memberId != null) {
+            viewModel.accessToken = accessToken
+            viewModel.memberId = memberId
+        }
     }
 
     private fun observeTestTokenResult() {
@@ -73,8 +88,8 @@ class LockerFragment : Fragment() {
     private fun setLoggedInUi() {
         binding.lockerLoginTv.text = "로그아웃"
         binding.lockerLoginTv.setOnClickListener {
-            val spf = requireActivity().getSharedPreferences("auth", AppCompatActivity.MODE_PRIVATE)
-            val token = spf.getString("accessToken", null)
+            //SharedPreferences 대신 동기화된 ViewModel의 토큰을 사용
+            val token = viewModel.accessToken
             if (token != null) {
                 viewModel.testToken(token)
             } else {
@@ -91,8 +106,14 @@ class LockerFragment : Fragment() {
     }
 
     private fun logout() {
+        // SharedPreferences의 정보를 삭제
         val spf = activity?.getSharedPreferences("auth", AppCompatActivity.MODE_PRIVATE)
         spf?.edit()?.clear()?.apply()
+
+        // ViewModel의 상태도 초기화
+        viewModel.accessToken = null
+        viewModel.memberId = null
+        viewModel.name = null
 
         updateUiBasedOnLoginState()
         Toast.makeText(requireContext(), "로그아웃되었습니다.", Toast.LENGTH_SHORT).show()
