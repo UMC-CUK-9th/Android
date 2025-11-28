@@ -41,14 +41,17 @@ class AlbumFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val db = AlbumDatabase.getInstance(requireContext())!!
-        val userId = getJwt(requireContext())
+        val userId = getMemberId(requireContext())
 
         // --- 1. 사용자별 '좋아요' 상태 확인 ---
-        lifecycleScope.launch(Dispatchers.IO) {
-            val liked = db.likeDao().isLiked(userId, albumId) != null
-            withContext(Dispatchers.Main) {
-                isLiked = liked
-                setLikeStatus(isLiked)
+        // 로그인한 경우에만 '좋아요' 상태를 확인
+        if (userId != 0) {
+            lifecycleScope.launch(Dispatchers.IO) {
+                val liked = db.likeDao().isLiked(userId, albumId) != null
+                withContext(Dispatchers.Main) {
+                    isLiked = liked
+                    setLikeStatus(isLiked)
+                }
             }
         }
 
@@ -76,6 +79,11 @@ class AlbumFragment : Fragment() {
 
         // --- 2. '좋아요' 클릭 리스너 로직 변경 ---
         binding.albumLikeIv.setOnClickListener {
+            // 로그아웃 상태(userId가 0)이면 아무것도 하지 않고 리스너를 종료
+            if (userId == 0) {
+                return@setOnClickListener
+            }
+
             isLiked = !isLiked
             setLikeStatus(isLiked)
 
@@ -89,9 +97,10 @@ class AlbumFragment : Fragment() {
         }
     }
 
-    private fun getJwt(context: Context): Int {
+    // 새로운 로그인 방식에 맞는 사용자 ID를 가져오는 함수
+    private fun getMemberId(context: Context): Int {
         val spf = context.getSharedPreferences("auth", AppCompatActivity.MODE_PRIVATE)
-        return spf.getInt("jwt", 0)
+        return spf.getInt("memberId", 0)
     }
 
     private fun setLikeStatus(isLiked: Boolean) {
