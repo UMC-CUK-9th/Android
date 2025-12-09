@@ -2,6 +2,7 @@ package com.example.umc_android_mission2
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,6 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.example.umc_android_mission2.databinding.FragmentLockerBinding
 import com.google.android.material.tabs.TabLayoutMediator
+import com.kakao.sdk.user.UserApiClient
 
 class LockerFragment : Fragment() {
 
@@ -74,7 +76,9 @@ class LockerFragment : Fragment() {
 
     private fun isLoggedIn(): Boolean {
         val spf = activity?.getSharedPreferences("auth", AppCompatActivity.MODE_PRIVATE)
-        return spf?.contains("accessToken") ?: false
+        // 일반 로그인(accessToken) 또는 카카오 로그인(isKakaoLoggedIn) 둘 중 하나라도 되어있으면 로그인 상태로 간주
+        val isKakaoLoggedIn = getKakaoLoginState()
+        return spf?.contains("accessToken") == true || isKakaoLoggedIn
     }
 
     private fun updateUiBasedOnLoginState() {
@@ -93,7 +97,7 @@ class LockerFragment : Fragment() {
             if (token != null) {
                 viewModel.testToken(token)
             } else {
-                logout() // 토큰이 없는 이례적인 경우에도 로그아웃 처리
+                logout() // 토큰이 없는 경우(카카오 로그인 등)에도 로그아웃 처리
             }
         }
     }
@@ -106,18 +110,42 @@ class LockerFragment : Fragment() {
     }
 
     private fun logout() {
-        // SharedPreferences의 정보를 삭제
-        val spf = activity?.getSharedPreferences("auth", AppCompatActivity.MODE_PRIVATE)
-        spf?.edit()?.clear()?.apply()
+        // 카카오 로그아웃 동시 처리
+        UserApiClient.instance.logout { error ->
+            if (error != null) {
+                Log.e("KAKAO/LOGOUT", "카카오 로그아웃 실패", error)
+            } else {
+                Log.i("KAKAO/LOGOUT", "카카오 로그아웃 성공")
+            }
+            
+            // SharedPreferences의 정보를 삭제
+            val spf = activity?.getSharedPreferences("auth", AppCompatActivity.MODE_PRIVATE)
+            spf?.edit()?.clear()?.apply()
 
-        // ViewModel의 상태도 초기화
-        viewModel.accessToken = null
-        viewModel.memberId = null
-        viewModel.name = null
+            // 카카오 로그인 상태도 삭제
+            setKakaoLoginState(false)
 
-        updateUiBasedOnLoginState()
-        Toast.makeText(requireContext(), "로그아웃되었습니다.", Toast.LENGTH_SHORT).show()
+            // ViewModel의 상태도 초기화
+            viewModel.accessToken = null
+            viewModel.memberId = null
+            viewModel.name = null
+
+            updateUiBasedOnLoginState()
+            Toast.makeText(requireContext(), "로그아웃되었습니다.", Toast.LENGTH_SHORT).show()
+        }
     }
+
+    // 카카오 로그인 상태 저장을 위한 SharedPreferences 함수 추가
+    private fun setKakaoLoginState(isLoggedIn: Boolean) {
+        val spf = activity?.getSharedPreferences("auth_kakao", AppCompatActivity.MODE_PRIVATE)
+        spf?.edit()?.putBoolean("isKakaoLoggedIn", isLoggedIn)?.apply()
+    }
+
+    private fun getKakaoLoginState(): Boolean {
+        val spf = activity?.getSharedPreferences("auth_kakao", AppCompatActivity.MODE_PRIVATE)
+        return spf?.getBoolean("isKakaoLoggedIn", false) ?: false
+    }
+
 
     override fun onDestroyView() {
         super.onDestroyView()
